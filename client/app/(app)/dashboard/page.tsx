@@ -1,66 +1,112 @@
 "use client";
 
+import Link from "next/link";
 import { useApi } from "@/lib/use-api";
 import { useAuth } from "@/lib/auth";
-import type { Organization } from "@/lib/types";
-import { Card, Spinner } from "@/components/ui";
+import type { ContentPiece, Organization } from "@/lib/types";
+import { Card, ListSkeleton, PageHeader } from "@/components/ui";
+
+function StatCard({
+  label,
+  value,
+  hint,
+  href,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  href: string;
+}) {
+  return (
+    <Link href={href}>
+      <Card className="transition-colors hover:border-muted/40">
+        <div className="text-[0.72rem] font-medium uppercase tracking-wide text-muted">
+          {label}
+        </div>
+        <div className="mt-1 text-3xl font-bold tracking-tight">{value}</div>
+        {hint && <div className="mt-1 text-xs text-muted">{hint}</div>}
+      </Card>
+    </Link>
+  );
+}
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { data: org, loading } = useApi<Organization>("/organization");
+  const isManager = user?.role === "ADMIN" || user?.role === "MANAGER";
 
+  const { data: org } = useApi<Organization>("/organization");
+  const { data: inReview, loading: l1 } =
+    useApi<ContentPiece[]>("/content?status=IN_REVIEW");
+  const { data: drafts, loading: l2 } =
+    useApi<ContentPiece[]>("/content?status=DRAFT");
+
+  const myDrafts = drafts?.filter((p) => p.createdBy === user?.userId) ?? [];
   const budget = org ? Number(org.monthlyAiBudgetUsd) : 0;
   const spend = org ? Number(org.aiSpendPeriodUsd) : 0;
   const pct = budget > 0 ? Math.min(100, (spend / budget) * 100) : 0;
 
   return (
     <div className="flex flex-col gap-8">
-      <header>
-        <h1 className="text-2xl font-bold tracking-tight">Tổng quan</h1>
-        <p className="mt-1 text-sm text-muted">
-          Xin chào {user?.email} · vai trò {user?.role}
-        </p>
-      </header>
+      <PageHeader
+        title={`Xin chào${user ? `, ${user.email.split("@")[0]}` : ""}`}
+        subtitle="Hôm nay bạn cần làm gì?"
+      />
 
-      {loading ? (
-        <Spinner />
+      {l1 || l2 ? (
+        <div className="grid gap-5 sm:grid-cols-3">
+          <ListSkeleton rows={1} />
+          <ListSkeleton rows={1} />
+          <ListSkeleton rows={1} />
+        </div>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Card>
-            <div className="text-[0.72rem] font-medium uppercase tracking-wide text-muted">
-              Tổ chức
-            </div>
-            <div className="mt-1 text-lg font-semibold">{org?.name}</div>
-            <div className="mt-4 text-[0.72rem] font-medium uppercase tracking-wide text-muted">
-              Model mặc định
-            </div>
-            <div className="mt-1 font-mono text-sm">{org?.defaultModel}</div>
-          </Card>
-
-          <Card>
-            <div className="text-[0.72rem] font-medium uppercase tracking-wide text-muted">
-              Ngân sách AI tháng này
-            </div>
-            <div className="mt-1 text-2xl font-bold tracking-tight">
-              ${spend.toFixed(2)}
-              <span className="ml-1 text-sm font-normal text-muted">
-                / ${budget.toFixed(2)}
-              </span>
-            </div>
-            <div className="mt-4 h-2 overflow-hidden rounded-sm bg-paper">
-              <div
-                className="h-full bg-accent transition-all"
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-            <div className="mt-2 text-xs text-muted">
-              {budget === 0
-                ? "Chưa cấp ngân sách — gọi AI sẽ bị chặn."
-                : `Đã dùng ${pct.toFixed(0)}%`}
-            </div>
-          </Card>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {isManager && (
+            <StatCard
+              label="Chờ tôi duyệt"
+              value={String(inReview?.length ?? 0)}
+              hint="Mở hàng đợi duyệt"
+              href="/review"
+            />
+          )}
+          <StatCard
+            label="Nháp của tôi"
+            value={String(myDrafts.length)}
+            hint="Bài bạn đang soạn"
+            href="/content"
+          />
+          {isManager && (
+            <StatCard
+              label="Ngân sách AI"
+              value={`${pct.toFixed(0)}%`}
+              hint={
+                budget === 0
+                  ? "Chưa cấp ngân sách"
+                  : `$${spend.toFixed(2)} / $${budget.toFixed(2)}`
+              }
+              href="/ai-usage"
+            />
+          )}
         </div>
       )}
+
+      <Card>
+        <div className="mb-3 text-[0.72rem] font-medium uppercase tracking-wide text-muted">
+          Bắt đầu nhanh
+        </div>
+        <div className="flex flex-wrap gap-3 text-sm">
+          <Link href="/content" className="font-medium text-accent hover:underline">
+            Viết bài mới →
+          </Link>
+          <span className="text-muted/40">·</span>
+          <Link href="/review" className="font-medium text-accent hover:underline">
+            Duyệt bài →
+          </Link>
+          <span className="text-muted/40">·</span>
+          <Link href="/campaigns" className="font-medium text-accent hover:underline">
+            Xem chiến dịch →
+          </Link>
+        </div>
+      </Card>
     </div>
   );
 }

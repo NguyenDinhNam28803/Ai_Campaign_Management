@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { useApi } from "@/lib/use-api";
 import { useAuth } from "@/lib/auth";
+import { useToast } from "@/components/toast";
 import type {
   AIGeneration,
   ContentPiece,
@@ -26,6 +27,8 @@ const SOURCE_TONE: Record<VersionSource, "neutral" | "accent" | "amber"> = {
 export default function ContentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const toast = useToast();
+  const stopWatch = useRef(false);
   const role = user?.role;
   const canReview = role === "ADMIN" || role === "MANAGER";
   const canReopen = canReview || role === "EDITOR";
@@ -52,14 +55,17 @@ export default function ContentDetailPage() {
     reloadVersions();
   };
 
-  async function act(fn: () => Promise<unknown>) {
+  async function act(fn: () => Promise<unknown>, successMsg?: string) {
     setBusy(true);
     setError(null);
     try {
       await fn();
+      if (successMsg) toast(successMsg, "success");
       reloadAll();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Thao tác thất bại");
+      const msg = e instanceof Error ? e.message : "Thao tác thất bại";
+      setError(msg);
+      toast(msg, "error");
     } finally {
       setBusy(false);
     }
@@ -69,20 +75,32 @@ export default function ContentDetailPage() {
     setGenerating(true);
     setError(null);
     setGen(null);
+    stopWatch.current = false;
     try {
       const { generationId } = await api<{ generationId: string }>(
         `/content/${id}/generate`,
         { method: "POST" },
       );
-      for (let i = 0; i < 40; i++) {
-        await sleep(2000);
+      // Polling thích ứng: nhanh lúc đầu rồi giãn dần, tránh đốt request.
+      for (let i = 0; i < 45 && !stopWatch.current; i++) {
+        await sleep(i < 5 ? 1000 : i < 12 ? 3000 : 5000);
+        if (stopWatch.current) break;
         const g = await api<AIGeneration>(`/generations/${generationId}`);
         setGen(g);
-        if (g.status === "DONE" || g.status === "FAILED") break;
+        if (g.status === "DONE") {
+          toast("AI đã sinh xong bản nháp", "success");
+          break;
+        }
+        if (g.status === "FAILED") {
+          toast("AI sinh thất bại — xem chi tiết lỗi", "error");
+          break;
+        }
       }
       reloadVersions();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Lỗi gọi AI");
+      const msg = e instanceof Error ? e.message : "Lỗi gọi AI";
+      setError(msg);
+      toast(msg, "error");
     } finally {
       setGenerating(false);
     }
@@ -145,11 +163,13 @@ export default function ContentDetailPage() {
                     variant="secondary"
                     loading={busy}
                     onClick={() =>
-                      act(() =>
-                        api(`/content/${id}/versions`, {
-                          method: "POST",
-                          body: { body: editBody },
-                        }),
+                      act(
+                        () =>
+                          api(`/content/${id}/versions`, {
+                            method: "POST",
+                            body: { body: editBody },
+                          }),
+                        "Đã lưu bản mới",
                       )
                     }
                   >
@@ -196,7 +216,9 @@ export default function ContentDetailPage() {
               <Button
                 variant="primary"
                 loading={busy}
-                onClick={() => act(() => api(`/content/${id}/submit`, { method: "POST" }))}
+                onClick={() =>
+                  act(() => api(`/content/${id}/submit`, { method: "POST" }), "Đã gửi duyệt")
+                }
               >
                 Gửi duyệt
               </Button>
@@ -217,7 +239,7 @@ export default function ContentDetailPage() {
                         body: { decision: "APPROVED", comment: comment || undefined },
                       });
                       setComment("");
-                    })
+                    }, "Đã duyệt bài")
                   }
                 >
                   Duyệt
@@ -232,7 +254,7 @@ export default function ContentDetailPage() {
                         body: { decision: "CHANGES_REQUESTED", comment: comment || undefined },
                       });
                       setComment("");
-                    })
+                    }, "Đã yêu cầu sửa — bài về lại Nháp")
                   }
                 >
                   Yêu cầu sửa
@@ -248,7 +270,9 @@ export default function ContentDetailPage() {
               <Button
                 variant="secondary"
                 loading={busy}
-                onClick={() => act(() => api(`/content/${id}/reopen`, { method: "POST" }))}
+                onClick={() =>
+                  act(() => api(`/content/${id}/reopen`, { method: "POST" }), "Đã mở lại để sửa")
+                }
               >
                 Mở lại (sửa tiếp)
               </Button>
@@ -266,23 +290,39 @@ export default function ContentDetailPage() {
             <Button variant="primary" loading={generating} onClick={generate}>
               {generating ? "Đang sinh…" : "Generate AI"}
             </Button>
-            {gen && (
-              <div className="flex flex-col gap-1 rounded-md border border-muted/15 bg-paper px-3 py-2 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted">Trạng thái</span>
-                  <JobStatusBadge status={gen.status} />
-                </div>
-                {gen.status === "DONE" && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted">Chi phí</span>
-                    <span className="font-mono">${gen.costUsd}</span>
-                  </div>
-                )}
-                {gen.status === "FAILED" && gen.error && (
-                  <p className="text-[#b3462f]">{gen.error}</p>
-                )}
-              </div>
+            {generating && (
+              <button
+                onClick={() => (stopWatch.current = true)}
+                className="text-xs text-muted hover:text-accent"
+              >
+                Dừng theo dõi (job vẫn chạy nền)
+              </button>
             )}
+            <div aria-live="polite">
+              {gen && (
+                <div className="flex flex-col gap-1 rounded-md border border-muted/15 bg-paper px-3 py-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted">Trạng thái</span>
+                    <JobStatusBadge status={gen.status} />
+                  </div>
+                  {gen.status === "DONE" && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted">Chi phí</span>
+                      <span className="font-mono">${gen.costUsd}</span>
+                    </div>
+                  )}
+                  {gen.status === "FAILED" && (
+                    <p className="text-[#b3462f]">
+                      {gen.error?.includes("quota")
+                        ? "Tài khoản OpenAI đã hết hạn mức. Liên hệ Admin để nạp thêm credit."
+                        : gen.error?.includes("ngân sách")
+                          ? gen.error
+                          : "AI sinh thất bại. Thử lại sau ít phút."}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </Card>
         </div>
       </div>

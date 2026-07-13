@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { api } from "@/lib/api";
 import { useApi } from "@/lib/use-api";
+import { useToast } from "@/components/toast";
 import type { Role, User } from "@/lib/types";
 import {
   Badge,
@@ -10,13 +11,14 @@ import {
   Card,
   Field,
   Input,
+  ListSkeleton,
   Select,
-  Spinner,
 } from "@/components/ui";
 
 const ROLES: Role[] = ["ADMIN", "MANAGER", "EDITOR", "WRITER"];
 
-export default function UsersPage() {
+export default function UsersSettingsPage() {
+  const toast = useToast();
   const { data, loading, reload } = useApi<User[]>("/users");
   const [form, setForm] = useState({
     email: "",
@@ -25,38 +27,36 @@ export default function UsersPage() {
     role: "WRITER" as Role,
   });
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const set = (k: keyof typeof form, v: string) =>
     setForm((f) => ({ ...f, [k]: v }));
 
   async function create(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
-    setError(null);
     try {
       await api("/users", { method: "POST", body: form });
+      toast(`Đã thêm ${form.email}`, "success");
       setForm({ email: "", fullName: "", password: "", role: "WRITER" });
       reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Lỗi tạo người dùng");
+      toast(err instanceof Error ? err.message : "Thêm thất bại", "error");
     } finally {
       setBusy(false);
     }
   }
 
-  async function disable(id: string) {
-    await api(`/users/${id}`, { method: "DELETE" });
-    reload();
+  async function disable(u: User) {
+    try {
+      await api(`/users/${u.id}`, { method: "DELETE" });
+      toast(`Đã vô hiệu hóa ${u.email}`, "success");
+      reload();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Thao tác thất bại", "error");
+    }
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <header>
-        <h1 className="text-2xl font-bold tracking-tight">Người dùng</h1>
-        <p className="mt-1 text-sm text-muted">Chỉ ADMIN quản lý tài khoản nội bộ.</p>
-      </header>
-
+    <div className="flex flex-col gap-6">
       <Card>
         <form onSubmit={create} className="flex flex-wrap items-end gap-4">
           <div className="min-w-48 flex-1">
@@ -89,11 +89,10 @@ export default function UsersPage() {
             Thêm
           </Button>
         </form>
-        {error && <p className="mt-3 text-sm text-[#b3462f]">{error}</p>}
       </Card>
 
       {loading ? (
-        <Spinner />
+        <ListSkeleton />
       ) : (
         <div className="flex flex-col gap-2">
           {data?.map((u) => (
@@ -106,7 +105,7 @@ export default function UsersPage() {
                 <Badge tone={u.role === "ADMIN" ? "accent" : "neutral"}>{u.role}</Badge>
                 <Badge tone={u.status === "ACTIVE" ? "green" : "red"}>{u.status}</Badge>
                 {u.status === "ACTIVE" && (
-                  <Button variant="ghost" onClick={() => disable(u.id)}>
+                  <Button variant="ghost" onClick={() => disable(u)}>
                     Vô hiệu hóa
                   </Button>
                 )}

@@ -37,11 +37,19 @@ export interface User {
   createdAt: string;
 }
 
+export interface VoiceProfile {
+  tone?: string;
+  audience?: string;
+  do?: string;
+  dont?: string;
+}
+
 export interface ProductLine {
   id: string;
   name: string;
   slug: string;
   status: string;
+  voiceProfile?: VoiceProfile | null;
   createdAt: string;
 }
 

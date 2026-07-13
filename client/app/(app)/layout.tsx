@@ -6,12 +6,21 @@ import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { Spinner, cn } from "@/components/ui";
 
-const NAV = [
+import type { Role } from "@/lib/types";
+
+const NAV: { href: string; label: string; match?: string; roles?: Role[] }[] = [
   { href: "/dashboard", label: "Tổng quan" },
-  { href: "/product-lines", label: "Dòng sản phẩm" },
-  { href: "/campaigns", label: "Chiến dịch" },
   { href: "/content", label: "Nội dung" },
-  { href: "/users", label: "Người dùng", adminOnly: true },
+  { href: "/review", label: "Duyệt" },
+  { href: "/campaigns", label: "Chiến dịch" },
+  { href: "/product-lines", label: "Dòng sản phẩm" },
+  { href: "/ai-usage", label: "Chi phí AI", roles: ["ADMIN", "MANAGER"] },
+  {
+    href: "/settings/organization",
+    label: "Cấu hình",
+    match: "/settings",
+    roles: ["ADMIN"],
+  },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -31,7 +40,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const links = NAV.filter((n) => !n.adminOnly || user.role === "ADMIN");
+  const links = NAV.filter((n) => !n.roles || n.roles.includes(user.role));
 
   return (
     <div className="mx-auto flex min-h-full max-w-6xl">
@@ -46,7 +55,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         <nav className="flex flex-col gap-0.5">
           {links.map((n) => {
-            const active = pathname.startsWith(n.href);
+            const active = pathname.startsWith(n.match ?? n.href);
             return (
               <Link
                 key={n.href}

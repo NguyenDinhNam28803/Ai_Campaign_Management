@@ -1,33 +1,43 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { api } from "@/lib/api";
 import { useApi } from "@/lib/use-api";
 import { useAuth } from "@/lib/auth";
+import { useToast } from "@/components/toast";
 import type { ProductLine } from "@/lib/types";
-import { Button, Card, EmptyState, Field, Input, Spinner } from "@/components/ui";
+import {
+  Button,
+  Card,
+  EmptyState,
+  Field,
+  Input,
+  ListSkeleton,
+  PageHeader,
+} from "@/components/ui";
 
 export default function ProductLinesPage() {
   const { user } = useAuth();
+  const toast = useToast();
   const canManage = user?.role === "ADMIN" || user?.role === "MANAGER";
   const { data, loading, reload } = useApi<ProductLine[]>("/product-lines");
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function create(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
-    setError(null);
     try {
       await api("/product-lines", { method: "POST", body: { name, slug } });
+      toast(`Đã tạo dòng sản phẩm "${name}"`, "success");
       setName("");
       setSlug("");
       reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Lỗi tạo dòng sản phẩm");
+      toast(err instanceof Error ? err.message : "Lỗi tạo dòng sản phẩm", "error");
     } finally {
       setBusy(false);
     }
@@ -35,12 +45,10 @@ export default function ProductLinesPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <header>
-        <h1 className="text-2xl font-bold tracking-tight">Dòng sản phẩm</h1>
-        <p className="mt-1 text-sm text-muted">
-          Mỗi dòng sản phẩm gom chiến dịch, tri thức và kênh riêng.
-        </p>
-      </header>
+      <PageHeader
+        title="Dòng sản phẩm"
+        subtitle="Mỗi dòng sản phẩm gom chiến dịch, tri thức và giọng văn riêng."
+      />
 
       {canManage && (
         <Card>
@@ -59,21 +67,26 @@ export default function ProductLinesPage() {
               Thêm
             </Button>
           </form>
-          {error && <p className="mt-3 text-sm text-[#b3462f]">{error}</p>}
         </Card>
       )}
 
       {loading ? (
-        <Spinner />
+        <ListSkeleton rows={3} />
       ) : !data?.length ? (
-        <EmptyState title="Chưa có dòng sản phẩm" hint="Tạo dòng sản phẩm đầu tiên ở trên." />
+        <EmptyState
+          title="Chưa có dòng sản phẩm"
+          hint={canManage ? "Tạo dòng sản phẩm đầu tiên ở trên để bắt đầu." : "Chưa có dòng sản phẩm nào được tạo."}
+        />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {data.map((pl) => (
-            <Card key={pl.id} className="p-4">
-              <div className="font-medium">{pl.name}</div>
-              <div className="mt-0.5 font-mono text-xs text-muted">{pl.slug}</div>
-            </Card>
+            <Link key={pl.id} href={`/product-lines/${pl.id}`}>
+              <Card className="p-4 transition-colors hover:border-muted/40">
+                <div className="font-medium">{pl.name}</div>
+                <div className="mt-0.5 font-mono text-xs text-muted">{pl.slug}</div>
+                <div className="mt-2 text-xs text-accent">Giọng văn →</div>
+              </Card>
+            </Link>
           ))}
         </div>
       )}

@@ -155,8 +155,50 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-muted/30 bg-surface/50 px-6 py-14 text-center">
       <p className="font-medium text-ink">{title}</p>
-      {hint && <p className="max-w-sm text-sm text-muted">{hint}</p>}
-      {action}
+      {hint && <p className="max-w-md text-sm text-muted">{hint}</p>}
+      {action && <div className="mt-1 flex gap-3">{action}</div>}
     </div>
+  );
+}
+
+/* ── Skeleton ───────────────────────────────────────────── */
+export function Skeleton({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn("animate-pulse rounded-md bg-muted/15", className)}
+      aria-hidden
+    />
+  );
+}
+
+/** Vài dòng skeleton cho danh sách — giữ đúng kích thước để CLS thấp. */
+export function ListSkeleton({ rows = 4 }: { rows?: number }) {
+  return (
+    <div className="flex flex-col gap-2">
+      {Array.from({ length: rows }).map((_, i) => (
+        <Skeleton key={i} className="h-16 w-full" />
+      ))}
+    </div>
+  );
+}
+
+/* ── PageHeader ─────────────────────────────────────────── */
+export function PageHeader({
+  title,
+  subtitle,
+  action,
+}: {
+  title: string;
+  subtitle?: string;
+  action?: ReactNode;
+}) {
+  return (
+    <header className="flex items-end justify-between gap-4">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+        {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
+      </div>
+      {action}
+    </header>
   );
 }
