@@ -4,8 +4,9 @@ services:
   redis:
     image: redis:7-alpine
     container_name: ai_campaign_redis
+    # Map ra 6381 để tránh xung đột với Redis native cũ (6379) và project khác (6380).
     ports:
-      - "6379:6379"
+      - "6381:6379"
     volumes:
       - redis_data:/data
     command: ["redis-server", "--appendonly", "yes"]
