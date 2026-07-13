@@ -1,7 +1,6 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { ConfigType } from '@nestjs/config';
-import redisConfig from '../config/redis.config';
+import { QueueModule } from '../queue/queue.module';
 import { BudgetService } from './budget/budget.service';
 import { GenerationController } from './generation/generation.controller';
 import { GenerationPipeline } from './generation/generation.pipeline';
@@ -12,23 +11,10 @@ import {
 } from './generation/generation.service';
 import { LLM_PROVIDER } from './llm/llm-provider.interface';
 import { OpenAIProvider } from './llm/openai.provider';
+import { RetrievalService } from './retrieval/retrieval.service';
 
 @Module({
-  imports: [
-    BullModule.forRootAsync({
-      inject: [redisConfig.KEY],
-      useFactory: (redis: ConfigType<typeof redisConfig>) => {
-        const url = new URL(redis.url);
-        return {
-          connection: {
-            host: url.hostname,
-            port: Number(url.port) || 6379,
-          },
-        };
-      },
-    }),
-    BullModule.registerQueue({ name: GENERATION_QUEUE }),
-  ],
+  imports: [QueueModule, BullModule.registerQueue({ name: GENERATION_QUEUE })],
   controllers: [GenerationController],
   providers: [
     { provide: LLM_PROVIDER, useClass: OpenAIProvider },
@@ -36,7 +22,8 @@ import { OpenAIProvider } from './llm/openai.provider';
     GenerationPipeline,
     GenerationService,
     GenerationProcessor,
+    RetrievalService,
   ],
-  exports: [LLM_PROVIDER, BudgetService],
+  exports: [LLM_PROVIDER, BudgetService, RetrievalService],
 })
 export class AiModule {}

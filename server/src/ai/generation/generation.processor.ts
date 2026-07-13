@@ -4,6 +4,7 @@ import { JobStatus, VersionSource } from '@prisma/client';
 import { Job } from 'bullmq';
 import { PrismaService } from '../../prisma/prisma.service';
 import { estimateCost } from '../llm/cost';
+import { RetrievalService } from '../retrieval/retrieval.service';
 import { GenerationPipeline } from './generation.pipeline';
 import { GENERATION_QUEUE } from './generation.service';
 
@@ -18,6 +19,7 @@ export class GenerationProcessor extends WorkerHost {
   constructor(
     private readonly prisma: PrismaService,
     private readonly pipeline: GenerationPipeline,
+    private readonly retrieval: RetrievalService,
   ) {
     super();
   }
@@ -38,8 +40,9 @@ export class GenerationProcessor extends WorkerHost {
       });
       const brief = `${piece.title}\n\n${piece.currentVersion?.body ?? ''}`.trim();
 
-      // RAG (P3) chưa có → context rỗng.
-      const out = await this.pipeline.run(brief, []);
+      // RAG: truy hồi ngữ cảnh theo dòng SP + company-wide.
+      const chunks = await this.retrieval.retrieve(gen.productLineId, brief);
+      const out = await this.pipeline.run(brief, chunks);
       const cost = estimateCost(gen.model, out.inputTokens, out.outputTokens);
 
       const last = await this.prisma.contentVersion.findFirst({
@@ -66,6 +69,7 @@ export class GenerationProcessor extends WorkerHost {
             inputTokens: out.inputTokens,
             outputTokens: out.outputTokens,
             costUsd: cost,
+            retrievedChunkIds: chunks.map((c) => c.id),
             completedAt: new Date(),
           },
         }),

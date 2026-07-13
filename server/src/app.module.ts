@@ -13,9 +13,11 @@ import openaiConfig from './config/openai.config';
 import redisConfig from './config/redis.config';
 import { ContentModule } from './content/content.module';
 import { HealthModule } from './health/health.module';
+import { KnowledgeModule } from './knowledge/knowledge.module';
 import { OrganizationModule } from './organization/organization.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductLineModule } from './product-line/product-line.module';
+import { QueueModule } from './queue/queue.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -25,6 +27,7 @@ import { UsersModule } from './users/users.module';
       validate,
       load: [appConfig, authConfig, redisConfig, openaiConfig],
     }),
+    QueueModule,
     PrismaModule,
     AuthModule,
     HealthModule,
@@ -34,6 +37,7 @@ import { UsersModule } from './users/users.module';
     CampaignModule,
     ContentModule,
     AiModule,
+    KnowledgeModule,
   ],
   providers: [
     // Thứ tự quan trọng: xác thực JWT trước, rồi mới kiểm tra role.
