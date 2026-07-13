@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Content Platform — Luồng nghiệp vụ & dữ liệu</title>
+<script>
+  (function () {
+    const saved = localStorage.getItem('acp-theme');
+    const dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+<style>
+  :root {
+    --bg: #F7F5EF; --surface: #FFFFFF; --surface2: #EEEBE1;
+    --ink: #16150F; --body: #3A382F; --muted: #857F6B;
+    --line: #D6D1C0; --line-soft: #E7E3D6;
+    --clay: #C2643B; --clay-soft: rgba(194,100,59,0.10);
+    --olive: #5F7A44; --olive-soft: rgba(95,122,68,0.13);
+    --indigo: #4C6280; --indigo-soft: rgba(76,98,128,0.12);
+    --gold: #B8912F;
+    --zone: rgba(22,21,15,0.022); --zone-line: #D6D1C0;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  html.dark {
+    --bg: #14130E; --surface: #201E17; --surface2: #2B291F;
+    --ink: #F7F5EF; --body: #D6D1C0; --muted: #8F897570;
+    --muted: #948E79;
+    --line: #3B3830; --line-soft: #2B291F;
+    --clay: #E08A5E; --clay-soft: rgba(224,138,94,0.15);
+    --olive: #9DB577; --olive-soft: rgba(157,181,119,0.16);
+    --indigo: #86A0C2; --indigo-soft: rgba(134,160,194,0.15);
+    --gold: #D6AE4E;
+    --zone: rgba(247,245,239,0.028); --zone-line: #3B3830;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--body); font-family: var(--sans);
+    -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; overflow: hidden;
+  }
+
+  /* ── top bar ─────────────────────────────── */
+  .bar {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 11px 20px; border-bottom: 1px solid var(--line-soft); flex: none;
+  }
+  .bar h1 { font-family: var(--serif); font-weight: 600; font-size: 19px; color: var(--ink); letter-spacing: -0.01em; }
+  .bar .sub { font-family: var(--mono); font-size: 10.5px; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
+  .spacer { flex: 1; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.02em;
+    padding: 5px 11px; border: 1px solid var(--line); border-radius: 999px;
+    background: transparent; color: var(--muted); cursor: pointer; transition: all .15s ease;
+  }
+  .chip:hover { color: var(--ink); border-color: var(--muted); }
+  .chip.on { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  #themeToggle {
+    font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 6px 11px; border: 1px solid var(--line); border-radius: 6px;
+    background: transparent; color: var(--muted); cursor: pointer;
+  }
+  #themeToggle:hover { color: var(--ink); border-color: var(--muted); }
+
+  /* ── stage ───────────────────────────────── */
+  .stage { flex: 1; position: relative; min-height: 0; cursor: grab; }
+  .stage.grabbing { cursor: grabbing; }
+  .stage svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* zones */
+  .zone rect { fill: var(--zone); stroke: var(--zone-line); stroke-width: 1; stroke-dasharray: 5 5; rx: 16; }
+  .zone .ztitle { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.09em; text-transform: uppercase; fill: var(--muted); }
+  .zone .zsub { font-family: var(--mono); font-size: 10.5px; fill: var(--muted); opacity: 0.7; }
+
+  /* nodes */
+  .node { cursor: pointer; }
+  .node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; rx: 10; transition: stroke .15s ease; }
+  .node:hover rect { stroke: var(--muted); }
+  .node.sel rect { stroke: var(--clay) !important; stroke-width: 2.2; }
+  .node .t  { font-family: var(--sans); font-size: 14px; font-weight: 650; fill: var(--ink); pointer-events: none; }
+  .node .m  { font-family: var(--mono); font-size: 10.5px; fill: var(--muted); pointer-events: none; }
+  .node .k  { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.07em; text-transform: uppercase; fill: var(--clay); pointer-events: none; }
+  .node.gate rect { fill: var(--clay-soft); stroke: var(--clay); }
+  .node.store rect { fill: var(--surface2); }
+  .node.ext rect { stroke-dasharray: 6 3; }
+  .node.built rect { stroke: var(--olive); }
+  .node.built .k { fill: var(--olive); }
+  .node.state rect { fill: var(--indigo-soft); stroke: var(--indigo); rx: 8; }
+  .node.state .t { font-size: 12.5px; }
+
+  /* edges */
+  .edge { stroke: var(--muted); stroke-width: 1.6; fill: none; marker-end: url(#a-mut); transition: opacity .2s ease, stroke .2s ease; }
+  .edge.dash { stroke-dasharray: 5 4; }
+  .elbl { font-family: var(--mono); font-size: 10px; fill: var(--muted); transition: opacity .2s ease; }
+
+  /* flow highlighting */
+  .stage.flowing .edge { opacity: 0.10; }
+  .stage.flowing .elbl { opacity: 0.08; }
+  .stage.flowing .node { opacity: 0.28; }
+  .stage.flowing .zone { opacity: 0.5; }
+  .stage.flowing .edge.lit {
+    opacity: 1; stroke: var(--clay); marker-end: url(#a-clay);
+    stroke-dasharray: 7 5; animation: march 0.9s linear infinite;
+  }
+  .stage.flowing .elbl.lit { opacity: 1; fill: var(--clay); }
+  .stage.flowing .node.lit { opacity: 1; }
+  .stage.flowing .node.lit rect { stroke: var(--clay); }
+  @keyframes march { to { stroke-dashoffset: -12; } }
+  @media (prefers-reduced-motion: reduce) { .stage.flowing .edge.lit { animation: none; } }
+
+  /* ── controls ────────────────────────────── */
+  .zoombar {
+    position: absolute; left: 14px; top: 12px; display: flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 4px;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.06);
+  }
+  .zoombar button {
+    font-family: var(--mono); font-size: 14px; width: 26px; height: 26px; line-height: 1;
+    border: none; background: transparent; color: var(--body); cursor: pointer; border-radius: 5px;
+  }
+  .zoombar button:hover { background: var(--surface2); color: var(--ink); }
+  .zoombar .zlvl { font-family: var(--mono); font-size: 10.5px; color: var(--muted); min-width: 40px; text-align: center; font-variant-numeric: tabular-nums; }
+  .hint { position: absolute; right: 16px; top: 14px; font-family: var(--mono); font-size: 10px; color: var(--muted); opacity: 0.75; }
+
+  /* ── floating cards ──────────────────────── */
+  .card {
+    position: absolute;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; box-shadow: 0 6px 26px rgba(0,0,0,0.10);
+  }
+  .card .x {
+    position: absolute; top: 9px; right: 10px; width: 22px; height: 22px; border-radius: 6px;
+    border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer;
+    font-family: var(--sans); font-size: 14px; line-height: 1; display: grid; place-items: center;
+  }
+  .card .x:hover { color: var(--ink); border-color: var(--muted); }
+  #detail { right: 16px; bottom: 16px; width: 350px; max-width: calc(100vw - 32px); }
+  #detail h3 { font-family: var(--serif); font-weight: 600; font-size: 17px; color: var(--ink); margin-bottom: 2px; padding-right: 22px; }
+  #detail .meta { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 9px; letter-spacing: 0.03em; }
+  #detail p { font-size: 12.5px; line-height: 1.58; }
+  #detail p code, #flowcap code { font-family: var(--mono); font-size: 11px; color: var(--clay); }
+  .tag { display: inline-block; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; margin-bottom: 9px; }
+  .tag.done { background: var(--olive-soft); color: var(--olive); }
+  .tag.plan { background: var(--clay-soft); color: var(--clay); }
+  #flowcap { left: 16px; bottom: 16px; max-width: 470px; display: none; }
+  #flowcap.show { display: block; }
+  #flowcap .fname { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--clay); margin-bottom: 7px; padding-right: 22px; }
+  #flowcap ol { margin-left: 18px; }
+  #flowcap li { font-size: 12.5px; line-height: 1.55; margin-bottom: 2px; }
+  .legend { position: absolute; left: 16px; top: 54px; display: flex; flex-direction: column; gap: 5px; background: var(--surface); border: 1px solid var(--line); border-radius: 9px; padding: 9px 11px; box-shadow: 0 3px 14px rgba(0,0,0,0.05); }
+  .legend .lg { display: flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .legend .sw { width: 15px; height: 11px; border-radius: 3px; border: 1.5px solid var(--line); }
+  .legend .sw.built { border-color: var(--olive); }
+  .legend .sw.gate { background: var(--clay-soft); border-color: var(--clay); }
+  .legend .sw.store { background: var(--surface2); }
+  .legend .sw.ext { border-style: dashed; }
+
+  @media (max-width: 900px) {
+    body { overflow: auto; }
+    .stage { min-height: 78vh; }
+    .legend { display: none; }
+    #detail { position: static; width: auto; margin: 10px 16px; }
+    #flowcap { position: static; margin: 0 16px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div>
+    <h1>AI Content Platform — luồng nghiệp vụ &amp; dữ liệu</h1>
+    <div class="sub">nội bộ · đa ProductLine · con người giữ chốt duyệt</div>
+  </div>
+  <div class="spacer"></div>
+  <div class="chips" id="chips">
+    <button class="chip on" data-flow="all">Toàn cảnh</button>
+    <button class="chip" data-flow="auth">Đăng nhập · RBAC</button>
+    <button class="chip" data-flow="generator">Generator</button>
+    <button class="chip" data-flow="assistant">Assistant</button>
+    <button class="chip" data-flow="rag">RAG</button>
+    <button class="chip" data-flow="workflow">Vòng đời · duyệt</button>
+    <button class="chip" data-flow="publish">Publish · Outbox</button>
+  </div>
+  <button id="themeToggle">Theme</button>
+</div>
+
+<div class="stage" id="stage">
+<svg id="svg" viewBox="0 0 1720 1040" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Sơ đồ kiến trúc và luồng nghiệp vụ AI Content Platform">
+  <defs>
+    <marker id="a-mut" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" style="fill: var(--muted)"/>
+    </marker>
+    <marker id="a-clay" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" style="fill: var(--clay)"/>
+    </marker>
+  </defs>
+
+  <g id="svg-content">
+  <!-- ── zones ─────────────────────────────── -->
+  <g class="zone"><rect x="30" y="120" width="250" height="560"/><text class="ztitle" x="50" y="150">Người dùng</text><text class="zsub" x="50" y="168">nhân viên nội bộ</text></g>
+  <g class="zone"><rect x="300" y="120" width="440" height="560"/><text class="ztitle" x="320" y="150">API — NestJS</text><text class="zsub" x="320" y="168">REST + SSE · module rõ ràng</text></g>
+  <g class="zone"><rect x="760" y="120" width="300" height="560"/><text class="ztitle" x="780" y="150">Hàng đợi &amp; Worker</text><text class="zsub" x="780" y="168">BullMQ · tách việc chạm ngoài</text></g>
+  <g class="zone"><rect x="1080" y="120" width="300" height="560"/><text class="ztitle" x="1100" y="150">Dữ liệu</text><text class="zsub" x="1100" y="168">một DB: quan hệ + vector</text></g>
+  <g class="zone"><rect x="1400" y="120" width="290" height="560"/><text class="ztitle" x="1420" y="150">Bên ngoài</text><text class="zsub" x="1420" y="168">có thể thay thế</text></g>
+  <g class="zone"><rect x="300" y="720" width="1090" height="290"/><text class="ztitle" x="320" y="750">Vòng đời nội dung</text><text class="zsub" x="320" y="768">state machine — không có đường tắt qua khâu duyệt</text></g>
+
+  <!-- ── edges ─────────────────────────────── -->
+  <!-- auth -->
+  <path class="edge" id="e-web-auth" d="M255,235 C 292,232 300,220 325,218"/>
+  <path class="edge" id="e-agent-auth" d="M255,385 C 296,388 300,250 325,232"/>
+  <path class="edge" id="e-auth-pg" d="M505,205 C 900,205 950,225 1100,250"/>
+  <!-- generator -->
+  <path class="edge" id="e-web-ai" d="M255,250 C 410,215 430,300 525,300"/>
+  <path class="edge" id="e-ai-org" d="M615,275 L615,249"/>
+  <path class="edge" id="e-ai-redis" d="M705,298 C 748,288 758,232 785,222"/>
+  <path class="edge" id="e-redis-genw" d="M905,249 L905,300"/>
+  <path class="edge" id="e-genw-pg" d="M1025,340 C 1058,326 1072,288 1100,272"/>
+  <path class="edge" id="e-genw-llm" d="M1025,362 C 1210,362 1250,300 1420,288"/>
+  <path class="edge" id="e-genw-aigen" d="M1025,382 C 1058,398 1072,414 1100,418"/>
+  <!-- assistant -->
+  <path class="edge" id="e-ai-llm" d="M705,318 C 1010,336 1160,322 1420,302"/>
+  <!-- rag -->
+  <path class="edge" id="e-ai-know" d="M540,345 C 468,362 432,368 415,375"/>
+  <path class="edge" id="e-know-pg" d="M505,405 C 800,442 950,326 1100,284"/>
+  <!-- workflow -->
+  <path class="edge" id="e-content-life" d="M415,345 C 410,600 405,770 405,860"/>
+  <path class="edge" id="e-l1" d="M480,889 L510,889"/>
+  <path class="edge" id="e-l2" d="M660,889 L690,889"/>
+  <path class="edge" id="e-l3" d="M840,889 L870,889"/>
+  <path class="edge" id="e-l4" d="M1020,889 L1050,889"/>
+  <path class="edge" id="e-l5" d="M765,860 C 900,798 1050,798 1125,860"/>
+  <path class="edge" id="e-l6" d="M1200,889 L1230,889"/>
+  <path class="edge dash" id="e-lb1" d="M540,918 C 520,948 500,948 495,918"/>
+  <path class="edge dash" id="e-lb2" d="M720,918 C 600,978 560,978 460,918"/>
+  <!-- publish -->
+  <path class="edge" id="e-publish-pg" d="M705,400 C 900,378 985,318 1100,296"/>
+  <path class="edge" id="e-pg-pubw" d="M1100,318 C 1000,420 952,472 1025,502"/>
+  <path class="edge" id="e-pubw-chan" d="M1025,520 C 1210,520 1250,508 1420,508"/>
+
+  <!-- edge labels -->
+  <text class="elbl" data-e="e-web-auth" x="262" y="216">login</text>
+  <text class="elbl" data-e="e-auth-pg" x="720" y="204" text-anchor="middle">tra User + role</text>
+  <text class="elbl" data-e="e-ai-org" x="622" y="266">check ngân sách</text>
+  <text class="elbl" data-e="e-ai-redis" x="712" y="250">enqueue</text>
+  <text class="elbl" data-e="e-redis-genw" x="912" y="278">jobId = gen.id</text>
+  <text class="elbl" data-e="e-genw-llm" x="1150" y="336" text-anchor="middle">brief→outline→draft→SEO</text>
+  <text class="elbl" data-e="e-genw-aigen" x="1030" y="408">log cost</text>
+  <text class="elbl" data-e="e-genw-pg" x="1030" y="300">version + cost (1 txn)</text>
+  <text class="elbl" data-e="e-ai-llm" x="1060" y="322" text-anchor="middle">SSE stream · không qua queue</text>
+  <text class="elbl" data-e="e-know-pg" x="820" y="404" text-anchor="middle">vector: product_line_id = $1 OR IS NULL</text>
+  <text class="elbl" data-e="e-l1" x="495" y="879" text-anchor="middle">submit</text>
+  <text class="elbl" data-e="e-l2" x="675" y="879" text-anchor="middle">approve</text>
+  <text class="elbl" data-e="e-l3" x="855" y="879" text-anchor="middle">đặt lịch</text>
+  <text class="elbl" data-e="e-l4" x="1035" y="879" text-anchor="middle">tới giờ</text>
+  <text class="elbl" data-e="e-l5" x="945" y="800" text-anchor="middle">publish ngay</text>
+  <text class="elbl" data-e="e-l6" x="1215" y="879" text-anchor="middle">archive</text>
+  <text class="elbl" data-e="e-lb2" x="590" y="972" text-anchor="middle">request changes · reopen</text>
+  <text class="elbl" data-e="e-publish-pg" x="905" y="356" text-anchor="middle">Publication + Outbox (1 txn)</text>
+  <text class="elbl" data-e="e-pg-pubw" x="978" y="470" text-anchor="middle">poll outbox</text>
+  <text class="elbl" data-e="e-pubw-chan" x="1210" y="500" text-anchor="middle">adapter.publish</text>
+
+  <!-- ── nodes: clients ────────────────────── -->
+  <g class="node" data-k="web">
+    <rect x="55" y="185" width="200" height="100"/>
+    <text class="t" x="75" y="216">Web App</text>
+    <text class="m" x="75" y="238">Next.js · Editor + Dashboard</text>
+    <text class="m" x="75" y="256">SSE cho Assistant</text>
+    <text class="m" x="75" y="274">poll trạng thái job</text>
+  </g>
+  <g class="node" data-k="agent">
+    <rect x="55" y="340" width="200" height="90"/>
+    <text class="t" x="75" y="371">API / Agent</text>
+    <text class="m" x="75" y="393">JWT · vai trò gắn trên user</text>
+    <text class="m" x="75" y="411">4 role: ADMIN…WRITER</text>
+  </g>
+
+  <!-- ── nodes: API ────────────────────────── -->
+  <g class="node built gate" data-k="auth">
+    <rect x="325" y="185" width="180" height="64"/>
+    <text class="k" x="343" y="205">P0 ✓ · cổng</text>
+    <text class="t" x="343" y="226">Auth + RBAC</text>
+    <text class="m" x="343" y="242">JWT · @Roles guard</text>
+  </g>
+  <g class="node built" data-k="org">
+    <rect x="525" y="185" width="180" height="64"/>
+    <text class="k" x="543" y="205">P0 ✓</text>
+    <text class="t" x="543" y="226">Org + Budget</text>
+    <text class="m" x="543" y="242">ngân sách AI org-level</text>
+  </g>
+  <g class="node" data-k="content">
+    <rect x="325" y="275" width="180" height="70"/>
+    <text class="k" x="343" y="295">P1</text>
+    <text class="t" x="343" y="316">Content</text>
+    <text class="m" x="343" y="333">workflow + versioning</text>
+  </g>
+  <g class="node gate" data-k="ai">
+    <rect x="525" y="275" width="180" height="70"/>
+    <text class="k" x="543" y="295">P2 · P4 · cổng chi phí</text>
+    <text class="t" x="543" y="316">AI Module</text>
+    <text class="m" x="543" y="333">LLMProvider · RAG · cost</text>
+  </g>
+  <g class="node" data-k="knowledge">
+    <rect x="325" y="375" width="180" height="64"/>
+    <text class="k" x="343" y="395">P3</text>
+    <text class="t" x="343" y="416">Knowledge</text>
+    <text class="m" x="343" y="432">ingest + embed</text>
+  </g>
+  <g class="node" data-k="publish">
+    <rect x="525" y="375" width="180" height="64"/>
+    <text class="k" x="543" y="395">P5</text>
+    <text class="t" x="543" y="416">Publish</text>
+    <text class="m" x="543" y="432">adapters + outbox</text>
+  </g>
+  <g class="node built" data-k="pl">
+    <rect x="325" y="470" width="380" height="58"/>
+    <text class="k" x="343" y="490">P0 ✓ ProductLine · P1 Campaign</text>
+    <text class="t" x="343" y="512">ProductLine / Campaign</text>
+  </g>
+
+  <!-- ── nodes: queue/workers ──────────────── -->
+  <g class="node store" data-k="redis">
+    <rect x="785" y="185" width="240" height="64"/>
+    <text class="k" x="803" y="205">P2</text>
+    <text class="t" x="803" y="226">Redis + BullMQ</text>
+    <text class="m" x="803" y="242">queue · delayed job (scheduling)</text>
+  </g>
+  <g class="node" data-k="genw">
+    <rect x="785" y="300" width="240" height="120"/>
+    <text class="k" x="803" y="322">P2 · P3</text>
+    <text class="t" x="803" y="344">Generation Worker</text>
+    <text class="m" x="803" y="364">RAG retrieve → pipeline đa bước</text>
+    <text class="m" x="803" y="382">attempts + backoff</text>
+    <text class="m" x="803" y="400">AIGeneration = nguồn sự thật job</text>
+  </g>
+  <g class="node" data-k="pubw">
+    <rect x="785" y="470" width="240" height="100"/>
+    <text class="k" x="803" y="492">P5</text>
+    <text class="t" x="803" y="514">Publish / Outbox Worker</text>
+    <text class="m" x="803" y="534">cron drain outbox PENDING</text>
+    <text class="m" x="803" y="552">fail → giữ event, retry</text>
+  </g>
+
+  <!-- ── nodes: data ───────────────────────── -->
+  <g class="node store built" data-k="pg">
+    <rect x="1100" y="200" width="260" height="140"/>
+    <text class="k" x="1118" y="222">P0 ✓ · Supabase</text>
+    <text class="t" x="1118" y="244">PostgreSQL + pgvector</text>
+    <text class="m" x="1118" y="264">14 bảng · Prisma</text>
+    <text class="m" x="1118" y="282">knowledge_chunk (HNSW)</text>
+    <text class="m" x="1118" y="300">ContentVersion: AI_DRAFT + HUMAN_EDIT</text>
+    <text class="m" x="1118" y="318">Publication · OutboxEvent</text>
+  </g>
+  <g class="node store" data-k="aigen">
+    <rect x="1100" y="380" width="260" height="80"/>
+    <text class="k" x="1118" y="402">P2 · minh bạch nội bộ</text>
+    <text class="t" x="1118" y="424">AIGeneration — sổ chi phí</text>
+    <text class="m" x="1118" y="442">cost_usd mỗi lần gọi + token</text>
+  </g>
+
+  <!-- ── nodes: external ───────────────────── -->
+  <g class="node ext" data-k="llm">
+    <rect x="1420" y="230" width="250" height="95"/>
+    <text class="k" x="1438" y="252">P2 · interface</text>
+    <text class="t" x="1438" y="274">LLM Provider</text>
+    <text class="m" x="1438" y="294">OpenAI / Claude / FPT AI</text>
+    <text class="m" x="1438" y="312">swap: chi phí &amp; quyền riêng tư</text>
+  </g>
+  <g class="node ext" data-k="chan">
+    <rect x="1420" y="460" width="250" height="95"/>
+    <text class="k" x="1438" y="482">P5</text>
+    <text class="t" x="1438" y="504">Kênh ngoài</text>
+    <text class="m" x="1438" y="524">WordPress / Social</text>
+    <text class="m" x="1438" y="542">1 adapter / loại kênh</text>
+  </g>
+
+  <!-- ── nodes: lifecycle states ───────────── -->
+  <g class="node state" data-k="draft">
+    <rect x="330" y="860" width="150" height="58"/>
+    <text class="t" x="348" y="885">DRAFT</text>
+    <text class="m" x="348" y="903">nháp (tay / AI)</text>
+  </g>
+  <g class="node state" data-k="inreview">
+    <rect x="510" y="860" width="150" height="58"/>
+    <text class="t" x="528" y="885">IN_REVIEW</text>
+    <text class="m" x="528" y="903">chờ Manager</text>
+  </g>
+  <g class="node state" data-k="approved">
+    <rect x="690" y="860" width="150" height="58"/>
+    <text class="t" x="708" y="885">APPROVED</text>
+    <text class="m" x="708" y="903">đã duyệt</text>
+  </g>
+  <g class="node state" data-k="scheduled">
+    <rect x="870" y="860" width="150" height="58"/>
+    <text class="t" x="888" y="885">SCHEDULED</text>
+    <text class="m" x="888" y="903">hẹn giờ</text>
+  </g>
+  <g class="node state" data-k="published">
+    <rect x="1050" y="860" width="150" height="58"/>
+    <text class="t" x="1068" y="885">PUBLISHED</text>
+    <text class="m" x="1068" y="903">đã đăng</text>
+  </g>
+  <g class="node state" data-k="archived">
+    <rect x="1230" y="860" width="150" height="58"/>
+    <text class="t" x="1248" y="885">ARCHIVED</text>
+    <text class="m" x="1248" y="903">lưu trữ</text>
+  </g>
+  </g>
+</svg>
+
+  <div class="zoombar">
+    <button id="zoomOut" title="Thu nhỏ">−</button>
+    <span class="zlvl" id="zlvl">100%</span>
+    <button id="zoomIn" title="Phóng to">+</button>
+    <button id="zoomReset" title="Đặt lại">⟲</button>
+  </div>
+  <div class="hint">kéo để di chuyển · lăn chuột để zoom</div>
+
+  <div class="legend">
+    <div class="lg"><span class="sw built"></span> Đã build (P0)</div>
+    <div class="lg"><span class="sw gate"></span> Cổng kiểm soát</div>
+    <div class="lg"><span class="sw store"></span> Kho dữ liệu</div>
+    <div class="lg"><span class="sw ext"></span> Hệ thống ngoài</div>
+  </div>
+
+  <div class="card" id="flowcap">
+    <button class="x" id="flowClose" aria-label="Đóng">×</button>
+    <div class="fname" id="f-name"></div>
+    <ol id="f-steps"></ol>
+  </div>
+
+  <div class="card" id="detail">
+    <button class="x" id="detailClose" aria-label="Đóng">×</button>
+    <h3 id="d-title">Bấm vào bất kỳ ô nào</h3>
+    <div class="meta" id="d-meta">chi tiết node</div>
+    <p id="d-body">Mỗi ô đều bấm được. Các chip phía trên làm sáng &amp; chạy animation từng luồng nghiệp vụ — Đăng nhập, Generator, Assistant, RAG, Vòng đời duyệt, Publish.</p>
+  </div>
+</div>
+
+<script>
+const DETAIL = {
+  web:      { t:"Web App", m:"Next.js · client", s:"plan", b:"Editor soạn thảo + Dashboard chi phí. Nhận token Assistant qua <b>SSE</b>, poll trạng thái job Generator. <i>Chưa dựng — thuộc các phase sau, P0 mới làm backend.</i>" },
+  agent:    { t:"API / Agent", m:"JWT · 4 role", s:"done", b:"Vì chỉ một tổ chức, <b>role là một trường thẳng trên user</b> — không multi-tenant, không RLS. Guard chặn theo <code>@Roles(...)</code>." },
+  auth:     { t:"Auth + RBAC", m:"module · cổng bảo mật", s:"done", b:"<code>POST /auth/login</code> → JWT <code>{sub,email,role}</code>. <code>JwtAuthGuard</code> global + <code>@Public()</code> cho health/login; <code>RolesGuard</code> đọc <code>user.role</code>. Đây là toàn bộ lớp bảo mật." },
+  org:      { t:"Org + Budget", m:"singleton config", s:"done", b:"<code>Organization</code> là singleton (unique index <code>((true))</code>) giữ <code>monthly_ai_budget_usd</code> + <code>ai_spend_period_usd</code>. Mọi call AI <b>pre-check</b> ngân sách ở đây trước." },
+  content:  { t:"Content", m:"workflow + versioning", s:"plan", b:"State machine 6 trạng thái + giữ cả <code>AI_DRAFT</code> lẫn <code>HUMAN_EDIT</code>. AI chỉ tạo <b>version mới</b>, không tự đẩy status qua duyệt. <i>Phase P1.</i>" },
+  ai:       { t:"AI Module", m:"một core · hai transport", s:"plan", b:"Cùng một lõi cho <b>Generator</b> (async, BullMQ) và <b>Assistant</b> (sync, SSE). Cả hai qua: budget-check → RAG → log AIGeneration. <i>P2 &amp; P4.</i>" },
+  knowledge:{ t:"Knowledge", m:"ingest + embed", s:"plan", b:"Nạp tài liệu → chia chunk → embed → lưu vào <code>knowledge_chunk</code>. Nguồn có thể gắn ProductLine <b>hoặc null = company-wide</b>. <i>Phase P3.</i>" },
+  publish:  { t:"Publish", m:"adapters + outbox", s:"plan", b:"Ghi <code>Publication</code> + <code>OutboxEvent</code> trong <b>cùng 1 transaction</b>. <code>ChannelAdapterRegistry</code> chọn adapter theo loại kênh. <i>Phase P5.</i>" },
+  pl:       { t:"ProductLine / Campaign", m:"tổ chức nội dung", s:"done", b:"<b>ProductLine đã build ở P0</b> (CRUD + soft-delete, quyền ADMIN/MANAGER). Campaign nằm trong bó P1. Mọi tri thức &amp; kênh gắn theo ProductLine." },
+  redis:    { t:"Redis + BullMQ", m:"hàng đợi", s:"plan", b:"Tách <b>bất đồng bộ</b> (Generator, Publish) khỏi HTTP request. Delayed job phục vụ scheduling. <i>Phase P2.</i>" },
+  genw:     { t:"Generation Worker", m:"worker nền", s:"plan", b:"<code>jobId = gen.id</code> làm enqueue <b>idempotent</b>. Chạy RAG + pipeline đa bước, rồi lưu version &amp; cộng cost trong <b>1 transaction</b>. <code>AIGeneration</code> là nguồn sự thật trạng thái job. <i>P2/P3.</i>" },
+  pubw:     { t:"Publish / Outbox Worker", m:"cron drain", s:"plan", b:"Poll outbox <code>PENDING</code> → gọi kênh ngoài qua adapter. Fail thì giữ event, lần sau retry — <b>không bao giờ mất lệnh đăng</b>. <i>Phase P5.</i>" },
+  pg:       { t:"PostgreSQL + pgvector", m:"Supabase · nguồn sự thật", s:"done", b:"Một DB cho cả quan hệ &amp; vector. <b>14 bảng đã migrate (Prisma)</b>. Index HNSW cho RAG; giữ cả bản AI lẫn bản người sửa để audit + cải tiến prompt." },
+  aigen:    { t:"AIGeneration — sổ chi phí", m:"minh bạch nội bộ", s:"plan", b:"Log <code>cost_usd</code> + token mỗi lần gọi LLM. Mục đích là <b>minh bạch chi phí nội bộ</b>, không phải billing. <i>Phase P2.</i>" },
+  llm:      { t:"LLM Provider", m:"interface · thay được", s:"plan", b:"Mọi nơi chỉ phụ thuộc interface <code>LLMProvider</code>, không phụ thuộc OpenAI. Đổi sang Claude/FPT AI cho dữ liệu nhạy cảm chỉ cần thay binding. Token lấy từ field <code>usage</code> của API." },
+  chan:     { t:"Kênh ngoài", m:"WordPress / Social", s:"plan", b:"API kênh ngoài mong manh nên đi qua <b>outbox + retry</b>. Thêm kênh mới chỉ là viết một adapter. <i>Phase P5.</i>" },
+  draft:    { t:"DRAFT", m:"trạng thái · nháp", s:"plan", b:"Bản nháp — viết tay hoặc AI sinh ra. Chỉ có thể chuyển sang <code>IN_REVIEW</code>." },
+  inreview: { t:"IN_REVIEW", m:"trạng thái · chờ duyệt", s:"plan", b:"Đã gửi duyệt. Manager <b>approve</b> → APPROVED, hoặc <b>request changes</b> → quay lại DRAFT." },
+  approved: { t:"APPROVED", m:"trạng thái · sẵn sàng", s:"plan", b:"Đã duyệt. Có thể <b>đặt lịch</b> (SCHEDULED), <b>đăng ngay</b> (PUBLISHED), hoặc <b>reopen</b> về DRAFT để sửa." },
+  scheduled:{ t:"SCHEDULED", m:"trạng thái · hẹn giờ", s:"plan", b:"Chờ tới giờ; worker (delayed job) tự đẩy sang PUBLISHED." },
+  published:{ t:"PUBLISHED", m:"trạng thái · đã đăng", s:"plan", b:"Đã đăng lên kênh ngoài. Sau cùng có thể <b>archive</b>." },
+  archived: { t:"ARCHIVED", m:"trạng thái · kết thúc", s:"plan", b:"Lưu trữ, không còn hoạt động — trạng thái cuối." },
+};
+
+const FLOWS = {
+  auth: {
+    name: "Đăng nhập & RBAC — P0 (đã build)",
+    edges: ["e-web-auth","e-agent-auth","e-auth-pg"],
+    nodes: ["web","agent","auth","org","pl","pg"],
+    steps: ["<code>POST /auth/login</code> email + mật khẩu (bcrypt)","Tra <code>User</code> + role trong Postgres, ký JWT <code>{sub,email,role}</code>","Mọi request sau: <code>JwtAuthGuard</code> → <code>RolesGuard</code> chặn đúng vai trò"]
+  },
+  generator: {
+    name: "Generator — sinh bài async + kiểm soát chi phí",
+    edges: ["e-web-ai","e-ai-org","e-ai-redis","e-redis-genw","e-genw-pg","e-genw-llm","e-genw-aigen"],
+    nodes: ["web","ai","org","redis","genw","pg","llm","aigen"],
+    steps: ["<code>POST /generate</code> → <b>budget pre-check</b> ở Org (vượt là chặn ngay tại cổng)","Tạo <code>AIGeneration(QUEUED)</code>, enqueue với <code>jobId = gen.id</code> (idempotent)","Worker: RAG retrieve → pipeline brief→outline→draft→SEO","Lưu <code>ContentVersion(AI_DRAFT)</code> + cộng cost trong <b>cùng 1 transaction</b>"]
+  },
+  assistant: {
+    name: "Assistant — SSE streaming, độ trễ thấp",
+    edges: ["e-web-ai","e-ai-org","e-ai-know","e-know-pg","e-ai-llm"],
+    nodes: ["web","ai","org","knowledge","pg","llm"],
+    steps: ["Chọn đoạn → <code>@Sse()</code>; <b>check budget TRƯỚC khi mở stream</b> (đã stream thì không hoàn token được)","RAG lấy ngữ cảnh, đẩy từng token về client real-time — <b>không qua BullMQ</b>","Log generation SAU khi stream xong (lúc đó mới biết tổng token)"]
+  },
+  rag: {
+    name: "RAG — ProductLine + company-wide",
+    edges: ["e-ai-know","e-know-pg"],
+    nodes: ["ai","knowledge","pg"],
+    steps: ["Embed câu truy vấn qua <code>LLMProvider.embed()</code>","Vector search: <code>product_line_id = $1 <b>OR IS NULL</b></code> — cố ý trộn tri thức dòng SP với tri thức chung công ty","Index HNSW (<code>&lt;=&gt;</code> cosine) trả chunk nhanh mà không quét bảng"]
+  },
+  workflow: {
+    name: "Vòng đời & duyệt — human-in-the-loop",
+    edges: ["e-content-life","e-l1","e-l2","e-l3","e-l4","e-l5","e-l6","e-lb1","e-lb2"],
+    nodes: ["web","content","draft","inreview","approved","scheduled","published","archived"],
+    steps: ["Không có đường tắt: <code>DRAFT → PUBLISHED</code> bị cấm, <b>bắt buộc qua IN_REVIEW → APPROVED</b>","Luật chuyển gom về một bảng <code>TRANSITIONS</code> duy nhất (<code>assertTransition</code>)","AI chỉ tạo version mới; con người điều khiển status — hai trục tách biệt cố ý"]
+  },
+  publish: {
+    name: "Publish + Outbox — đăng tin cậy",
+    edges: ["e-publish-pg","e-pg-pubw","e-pubw-chan"],
+    nodes: ["content","publish","pg","pubw","chan"],
+    steps: ["Ghi <code>Publication(PENDING)</code> + <code>OutboxEvent</code> trong <b>cùng 1 transaction</b> (nguyên tử)","Worker poll outbox rồi mới gọi kênh ngoài qua adapter","OK → <code>LIVE</code> + processed; Fail → giữ <code>PENDING</code>, retry backoff — không mất lệnh đăng"]
+  }
+};
+
+const stage = document.getElementById('stage');
+const nodes = document.querySelectorAll('.node');
+const edges = document.querySelectorAll('.edge');
+const elbls = document.querySelectorAll('.elbl');
+const chips = document.querySelectorAll('.chip');
+const fcap = document.getElementById('flowcap');
+const detail = document.getElementById('detail');
+
+function setFlow(key) {
+  chips.forEach(c => c.classList.toggle('on', c.dataset.flow === key));
+  edges.forEach(e => e.classList.remove('lit'));
+  elbls.forEach(l => l.classList.remove('lit'));
+  nodes.forEach(n => n.classList.remove('lit'));
+  if (key === 'all') { stage.classList.remove('flowing'); fcap.classList.remove('show'); return; }
+  const f = FLOWS[key];
+  stage.classList.add('flowing');
+  f.edges.forEach(id => document.getElementById(id)?.classList.add('lit'));
+  elbls.forEach(l => { if (f.edges.includes(l.dataset.e)) l.classList.add('lit'); });
+  f.nodes.forEach(k => document.querySelector(`.node[data-k="${k}"]`)?.classList.add('lit'));
+  document.getElementById('f-name').textContent = f.name;
+  document.getElementById('f-steps').innerHTML = f.steps.map(s => `<li>${s}</li>`).join('');
+  fcap.classList.add('show');
+}
+chips.forEach(c => c.addEventListener('click', () => setFlow(c.dataset.flow)));
+document.getElementById('flowClose').addEventListener('click', () => {
+  fcap.classList.remove('show'); setFlow('all');
+});
+
+function showDetail(k) {
+  const d = DETAIL[k]; if (!d) return;
+  nodes.forEach(x => x.classList.toggle('sel', x.dataset.k === k));
+  document.getElementById('d-title').textContent = d.t;
+  document.getElementById('d-meta').textContent = d.m;
+  const tag = d.s === 'done'
+    ? '<span class="tag done">Đã build · P0</span>'
+    : '<span class="tag plan">Kế hoạch · P1–P6</span>';
+  document.getElementById('d-body').innerHTML = tag + '<br>' + d.b;
+  detail.style.display = 'block';
+}
+document.getElementById('detailClose').addEventListener('click', () => {
+  detail.style.display = 'none';
+  nodes.forEach(x => x.classList.remove('sel'));
+});
+
+// theme
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const dark = !document.documentElement.classList.contains('dark');
+  document.documentElement.classList.toggle('dark', dark);
+  localStorage.setItem('acp-theme', dark ? 'dark' : 'light');
+});
+
+/* ── pan & zoom ─────────────────────────────── */
+const svg = document.getElementById('svg');
+const content = document.getElementById('svg-content');
+const VB = { w: 1720, h: 1040 };
+let scale = 1, tx = 0, ty = 0;
+let dragging = false, moved = false, sx = 0, sy = 0, ox = 0, oy = 0;
+
+function apply() {
+  content.setAttribute('transform', `translate(${tx} ${ty}) scale(${scale})`);
+  document.getElementById('zlvl').textContent = Math.round(scale * 100) + '%';
+}
+function toSvg(clientX, clientY) {
+  const r = svg.getBoundingClientRect();
+  const uPerPx = VB.w / r.width;               // viewBox units per screen px (meet, width-bound assumed)
+  const vy = VB.h / r.height;
+  return { x: (clientX - r.left) * uPerPx, y: (clientY - r.top) * vy };
+}
+function zoomAt(clientX, clientY, factor) {
+  const before = toSvg(clientX, clientY);
+  const ns = Math.min(3, Math.max(0.4, scale * factor));
+  // keep the SVG point under the cursor fixed: p = (svgPoint*scale)+t  →  solve t
+  tx = before.x - (before.x - tx) * (ns / scale);
+  ty = before.y - (before.y - ty) * (ns / scale);
+  scale = ns; apply();
+}
+svg.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.12 : 1 / 1.12);
+}, { passive: false });
+
+stage.addEventListener('mousedown', (e) => {
+  if (e.button !== 0) return;
+  dragging = true; moved = false; sx = e.clientX; sy = e.clientY; ox = tx; oy = ty;
+  stage.classList.add('grabbing');
+});
+window.addEventListener('mousemove', (e) => {
+  if (!dragging) return;
+  const dx = e.clientX - sx, dy = e.clientY - sy;
+  if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
+  const r = svg.getBoundingClientRect();
+  tx = ox + dx * (VB.w / r.width);             // pan 1:1 in SVG space (do NOT divide by scale)
+  ty = oy + dy * (VB.h / r.height);
+  apply();
+});
+window.addEventListener('mouseup', () => { dragging = false; stage.classList.remove('grabbing'); });
+
+// suppress node click right after a drag
+svg.addEventListener('click', (e) => {
+  if (moved) { e.stopPropagation(); moved = false; return; }
+  const g = e.target.closest('.node');
+  if (g) showDetail(g.dataset.k);
+}, true);
+
+document.getElementById('zoomIn').addEventListener('click', () => {
+  const r = svg.getBoundingClientRect(); zoomAt(r.left + r.width/2, r.top + r.height/2, 1.2);
+});
+document.getElementById('zoomOut').addEventListener('click', () => {
+  const r = svg.getBoundingClientRect(); zoomAt(r.left + r.width/2, r.top + r.height/2, 1/1.2);
+});
+document.getElementById('zoomReset').addEventListener('click', () => {
+  scale = 1; tx = 0; ty = 0; apply();
+});
+apply();
+</script>
+</body>
+</html>
