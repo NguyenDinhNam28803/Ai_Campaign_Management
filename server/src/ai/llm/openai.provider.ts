@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { NsConfigType } from '../../config/config.types';
+import type { NsConfigType } from '../../config/config.types';
 import OpenAI from 'openai';
 import openaiConfig from '../../config/openai.config';
 import {
