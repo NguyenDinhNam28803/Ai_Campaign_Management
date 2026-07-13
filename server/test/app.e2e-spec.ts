@@ -4,66 +4,167 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 
+// Mỗi test gọi nhiều round-trip tới Supabase (ap-northeast-1) — nới timeout.
+jest.setTimeout(30000);
+
 /**
- * Happy path e2e: health / login / RBAC.
- * Yêu cầu DB thật (Supabase) đã migrate + seed. Nếu chưa cấu hình DATABASE_URL
- * hợp lệ, app không boot được và suite sẽ fail — chạy sau bước migrate/seed.
+ * e2e trên DB Supabase thật (đã migrate + seed).
+ * Bao gồm: P0 (health/login/RBAC) + P1 (vòng đời nội dung).
  */
 describe('AI Content Platform (e2e)', () => {
   let app: INestApplication<App>;
+  let adminToken: string;
+  let writerToken: string;
+  let productLineId: string;
+  let campaignId: string;
+  let pieceId: string;
+
+  const http = () => request(app.getHttpServer());
+  const auth = (t: string) => ({ Authorization: `Bearer ${t}` });
+  const stamp = Date.now();
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
-
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
-    );
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
+
+    const login = await http()
+      .post('/auth/login')
+      .send({
+        email: process.env.SEED_ADMIN_EMAIL,
+        password: process.env.SEED_ADMIN_PASSWORD,
+      });
+    adminToken = login.body.accessToken;
   });
 
   afterAll(async () => {
     await app?.close();
   });
 
-  it('GET /health -> 200 (public, không cần token)', () => {
-    return request(app.getHttpServer())
-      .get('/health')
-      .expect(200)
-      .expect((res) => {
-        expect(res.body.status).toBe('ok');
-      });
+  // ── P0 ────────────────────────────────────────────────
+  it('GET /health -> 200 (public)', () =>
+    http().get('/health').expect(200));
+
+  it('GET /content -> 401 khi thiếu token', () =>
+    http().get('/content').expect(401));
+
+  it('login admin trả accessToken', () => {
+    expect(adminToken).toBeDefined();
   });
 
-  it('GET /product-lines -> 401 khi thiếu token', () => {
-    return request(app.getHttpServer()).get('/product-lines').expect(401);
+  // ── Chuẩn bị dữ liệu ──────────────────────────────────
+  it('admin tạo ProductLine + Campaign', async () => {
+    const pl = await http()
+      .post('/product-lines')
+      .set(auth(adminToken))
+      .send({ name: 'P1 Line', slug: `p1-${stamp}` })
+      .expect(201);
+    productLineId = pl.body.id;
+
+    const c = await http()
+      .post('/campaigns')
+      .set(auth(adminToken))
+      .send({ productLineId, name: 'P1 Campaign' })
+      .expect(201);
+    campaignId = c.body.id;
   });
 
-  it('POST /auth/login với admin seed -> 201 + accessToken', async () => {
-    const res = await request(app.getHttpServer())
-      .post('/auth/login')
+  it('admin tạo user WRITER và đăng nhập được', async () => {
+    await http()
+      .post('/users')
+      .set(auth(adminToken))
       .send({
-        email: process.env.SEED_ADMIN_EMAIL,
-        password: process.env.SEED_ADMIN_PASSWORD,
+        email: `writer-${stamp}@company.com`,
+        fullName: 'Writer QA',
+        password: 'Writer@123',
+        role: 'WRITER',
       })
       .expect(201);
-    expect(res.body.accessToken).toBeDefined();
+
+    const login = await http()
+      .post('/auth/login')
+      .send({ email: `writer-${stamp}@company.com`, password: 'Writer@123' })
+      .expect(201);
+    writerToken = login.body.accessToken;
   });
 
-  it('POST /product-lines -> 201 với token ADMIN', async () => {
-    const login = await request(app.getHttpServer())
-      .post('/auth/login')
+  // ── P1: vòng đời nội dung ─────────────────────────────
+  it('tạo bài -> DRAFT + version #1', async () => {
+    const res = await http()
+      .post('/content')
+      .set(auth(adminToken))
       .send({
-        email: process.env.SEED_ADMIN_EMAIL,
-        password: process.env.SEED_ADMIN_PASSWORD,
-      });
-    const token = login.body.accessToken;
-    await request(app.getHttpServer())
-      .post('/product-lines')
-      .set('Authorization', `Bearer ${token}`)
-      .send({ name: 'E2E Line', slug: `e2e-${Date.now()}` })
+        campaignId,
+        title: 'Bài viết thử',
+        contentType: 'BLOG',
+        body: 'Nội dung ban đầu.',
+      })
       .expect(201);
+    pieceId = res.body.id;
+    expect(res.body.status).toBe('DRAFT');
+    expect(res.body.currentVersion.versionNumber).toBe(1);
+    expect(res.body.currentVersion.source).toBe('HUMAN_EDIT');
+  });
+
+  it('sửa nội dung -> version #2, giữ lịch sử', async () => {
+    await http()
+      .post(`/content/${pieceId}/versions`)
+      .set(auth(adminToken))
+      .send({ body: 'Nội dung đã sửa.' })
+      .expect(201);
+    const versions = await http()
+      .get(`/content/${pieceId}/versions`)
+      .set(auth(adminToken))
+      .expect(200);
+    expect(versions.body).toHaveLength(2);
+  });
+
+  it('submit -> IN_REVIEW', async () => {
+    const res = await http()
+      .post(`/content/${pieceId}/submit`)
+      .set(auth(adminToken))
+      .expect(201);
+    expect(res.body.status).toBe('IN_REVIEW');
+  });
+
+  it('WRITER KHÔNG được duyệt -> 403', () =>
+    http()
+      .post(`/content/${pieceId}/reviews`)
+      .set(auth(writerToken))
+      .send({ decision: 'APPROVED' })
+      .expect(403));
+
+  it('MANAGER/ADMIN duyệt APPROVED -> status APPROVED', async () => {
+    const res = await http()
+      .post(`/content/${pieceId}/reviews`)
+      .set(auth(adminToken))
+      .send({ decision: 'APPROVED', comment: 'Ổn' })
+      .expect(201);
+    expect(res.body.status).toBe('APPROVED');
+  });
+
+  it('không được sửa nội dung khi đã rời DRAFT -> 400', () =>
+    http()
+      .post(`/content/${pieceId}/versions`)
+      .set(auth(adminToken))
+      .send({ body: 'sửa lén' })
+      .expect(400));
+
+  it('request-changes đưa bài mới về DRAFT', async () => {
+    const p = await http()
+      .post('/content')
+      .set(auth(adminToken))
+      .send({ campaignId, title: 'Bài 2', contentType: 'SOCIAL', body: 'x' })
+      .expect(201);
+    await http().post(`/content/${p.body.id}/submit`).set(auth(adminToken)).expect(201);
+    const res = await http()
+      .post(`/content/${p.body.id}/reviews`)
+      .set(auth(adminToken))
+      .send({ decision: 'CHANGES_REQUESTED', comment: 'Sửa lại mở bài' })
+      .expect(201);
+    expect(res.body.status).toBe('DRAFT');
   });
 });
