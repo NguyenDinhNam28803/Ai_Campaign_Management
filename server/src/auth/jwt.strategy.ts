@@ -1,9 +1,15 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import type { NsConfigType } from '../config/config.types';
 import { PassportStrategy } from '@nestjs/passport';
+import type { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import authConfig from '../config/auth.config';
+import { ACCESS_TOKEN_COOKIE } from './auth.constants';
 import { AuthUser } from './decorators/current-user.decorator';
+
+/** Lấy JWT từ httpOnly cookie (web) — ưu tiên; hoặc Bearer header (API/agent). */
+const fromCookie = (req: Request): string | null =>
+  (req?.cookies?.[ACCESS_TOKEN_COOKIE] as string | undefined) ?? null;
 
 export interface JwtPayload {
   sub: string;
@@ -21,7 +27,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('JWT_SECRET chưa cấu hình');
     }
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        fromCookie,
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ]),
       ignoreExpiration: false,
       secretOrKey: config.jwtSecret,
     });

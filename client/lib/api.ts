@@ -1,18 +1,7 @@
-// Fetch wrapper gọi NestJS API: gắn Bearer token, xử lý lỗi & 401.
+// Fetch wrapper gọi NestJS API. Xác thực bằng httpOnly cookie (S-03) —
+// KHÔNG lưu token trong JS/localStorage; cookie tự đính kèm qua credentials:'include'.
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
-const TOKEN_KEY = "acp_token";
-
-export function getToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(TOKEN_KEY);
-}
-export function setToken(token: string) {
-  window.localStorage.setItem(TOKEN_KEY, token);
-}
-export function clearToken() {
-  window.localStorage.removeItem(TOKEN_KEY);
-}
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4500";
 
 export class ApiError extends Error {
   constructor(
@@ -26,31 +15,29 @@ export class ApiError extends Error {
 interface ReqOptions {
   method?: string;
   body?: unknown;
-  auth?: boolean; // mặc định true
 }
 
 export async function api<T = unknown>(
   path: string,
   opts: ReqOptions = {},
 ): Promise<T> {
-  const { method = "GET", body, auth = true } = opts;
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (auth) {
-    const token = getToken();
-    if (token) headers.Authorization = `Bearer ${token}`;
-  }
+  const { method = "GET", body } = opts;
 
   const res = await fetch(BASE + path, {
     method,
-    headers,
+    credentials: "include", // gửi/nhận httpOnly cookie
+    headers: { "Content-Type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
-  if (res.status === 401 && typeof window !== "undefined") {
-    clearToken();
-    if (!window.location.pathname.startsWith("/login")) {
-      window.location.href = "/login";
-    }
+  // 401 = chưa đăng nhập / hết phiên. Điều hướng về /login (trừ khi đang thao tác auth).
+  if (
+    res.status === 401 &&
+    typeof window !== "undefined" &&
+    !window.location.pathname.startsWith("/login") &&
+    !path.startsWith("/auth/")
+  ) {
+    window.location.href = "/login";
   }
 
   const text = await res.text();
@@ -58,9 +45,11 @@ export async function api<T = unknown>(
 
   if (!res.ok) {
     const message =
-      (data && (data.message?.toString?.() || data.error)) ||
-      `Lỗi ${res.status}`;
-    throw new ApiError(res.status, Array.isArray(message) ? message.join(", ") : message);
+      (data && (data.message?.toString?.() || data.error)) || `Lỗi ${res.status}`;
+    throw new ApiError(
+      res.status,
+      Array.isArray(message) ? message.join(", ") : message,
+    );
   }
   return data as T;
 }
