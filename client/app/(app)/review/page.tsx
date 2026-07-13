@@ -2,20 +2,17 @@
 
 import Link from "next/link";
 import { useApi } from "@/lib/use-api";
+import { resources } from "@/lib/resources";
 import type { Campaign, ContentPiece } from "@/lib/types";
-import {
-  Badge,
-  Card,
-  EmptyState,
-  ListSkeleton,
-  PageHeader,
-} from "@/components/ui";
+import { Badge, Card, EmptyState, ErrorState, ListSkeleton, PageHeader } from "@/components/ui";
 
 export default function ReviewQueuePage() {
-  const { data, loading } = useApi<ContentPiece[]>("/content?status=IN_REVIEW");
-  const { data: campaigns } = useApi<Campaign[]>("/campaigns");
-  const campaignName = (id: string) =>
-    campaigns?.find((c) => c.id === id)?.name ?? "—";
+  const { data, loading, error, reload } = useApi<ContentPiece[]>(
+    () => resources.content.list({ status: "IN_REVIEW" }),
+    "content:IN_REVIEW",
+  );
+  const campaigns = useApi<Campaign[]>(() => resources.campaigns.list(), "campaigns");
+  const campaignName = (id: string) => campaigns.data?.find((c) => c.id === id)?.name ?? "—";
 
   return (
     <div className="flex flex-col gap-8">
@@ -24,7 +21,9 @@ export default function ReviewQueuePage() {
         subtitle="Các bài đang chờ duyệt. Mở một bài để duyệt hoặc yêu cầu sửa."
       />
 
-      {loading ? (
+      {error ? (
+        <ErrorState message={error} onRetry={reload} />
+      ) : loading ? (
         <ListSkeleton />
       ) : !data?.length ? (
         <EmptyState

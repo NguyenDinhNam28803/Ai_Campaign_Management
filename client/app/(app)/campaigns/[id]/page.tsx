@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useApi } from "@/lib/use-api";
+import { resources } from "@/lib/resources";
 import type { Campaign, ContentPiece, ContentStatus } from "@/lib/types";
-import { Badge, Card, ListSkeleton } from "@/components/ui";
+import { DetailHeader } from "@/components/layout/detail-header";
+import { Badge, Card, ErrorState, ListSkeleton } from "@/components/ui";
 
 const COLUMNS: { status: ContentStatus; label: string }[] = [
   { status: "DRAFT", label: "Nháp" },
@@ -15,32 +17,27 @@ const COLUMNS: { status: ContentStatus; label: string }[] = [
 
 export default function CampaignDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { data: campaign, loading } = useApi<Campaign>(`/campaigns/${id}`);
-  const { data: pieces } = useApi<ContentPiece[]>(`/content?campaignId=${id}`);
+  const campaign = useApi<Campaign>(() => resources.campaigns.get(id), `campaign:${id}`);
+  const pieces = useApi<ContentPiece[]>(
+    () => resources.content.list({ campaignId: id }),
+    `content:campaign:${id}`,
+  );
 
-  if (loading || !campaign) return <ListSkeleton rows={2} />;
+  if (campaign.error) return <ErrorState message={campaign.error} onRetry={campaign.reload} />;
+  if (campaign.loading || !campaign.data) return <ListSkeleton rows={2} />;
 
-  const byStatus = (s: ContentStatus) =>
-    pieces?.filter((p) => p.status === s) ?? [];
+  const byStatus = (s: ContentStatus) => pieces.data?.filter((p) => p.status === s) ?? [];
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <Link href="/campaigns" className="text-sm text-muted hover:text-accent">
-          ← Chiến dịch
-        </Link>
-        <div className="mt-2 flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{campaign.name}</h1>
-            {campaign.goal && (
-              <p className="mt-0.5 text-sm text-muted">{campaign.goal}</p>
-            )}
-          </div>
-          <Badge>{campaign.status}</Badge>
-        </div>
-      </div>
+      <DetailHeader
+        backHref="/campaigns"
+        backLabel="Chiến dịch"
+        title={campaign.data.name}
+        subtitle={campaign.data.goal ?? undefined}
+        right={<Badge>{campaign.data.status}</Badge>}
+      />
 
-      {/* Kanban theo state machine backend */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {COLUMNS.map((col) => {
           const items = byStatus(col.status);
@@ -70,10 +67,7 @@ export default function CampaignDetailPage() {
         })}
       </div>
 
-      <Link
-        href="/content"
-        className="text-sm font-medium text-accent hover:underline"
-      >
+      <Link href="/content" className="text-sm font-medium text-accent hover:underline">
         + Tạo bài mới trong Nội dung
       </Link>
     </div>

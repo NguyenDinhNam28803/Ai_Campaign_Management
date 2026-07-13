@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
-import { api } from "@/lib/api";
+import { useMemo, useState } from "react";
 import { useApi } from "@/lib/use-api";
-import { useToast } from "@/components/toast";
+import { useMutation } from "@/lib/use-mutation";
+import { resources } from "@/lib/resources";
 import type { Campaign, ContentPiece, ContentType } from "@/lib/types";
 import { ContentStatusBadge } from "@/components/status";
 import {
@@ -12,6 +12,7 @@ import {
   Button,
   Card,
   EmptyState,
+  ErrorState,
   Field,
   Input,
   ListSkeleton,
@@ -23,45 +24,39 @@ import {
 const TYPES: ContentType[] = ["BLOG", "SOCIAL", "EMAIL", "LANDING"];
 
 export default function ContentListPage() {
-  const toast = useToast();
-  const { data: campaigns } = useApi<Campaign[]>("/campaigns");
+  const campaigns = useApi<Campaign[]>(() => resources.campaigns.list(), "campaigns");
   const [filter, setFilter] = useState("");
-  const listPath = filter ? `/content?campaignId=${filter}` : "/content";
-  const { data, loading, reload } = useApi<ContentPiece[]>(listPath);
+  const { data, loading, error, reload } = useApi<ContentPiece[]>(
+    () => resources.content.list({ campaignId: filter || undefined }),
+    `content:${filter}`,
+  );
+  const { run, busy } = useMutation();
 
+  const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     campaignId: "",
     title: "",
     contentType: "BLOG" as ContentType,
     body: "",
   });
-  const [busy, setBusy] = useState(false);
-  const [open, setOpen] = useState(false);
-  const set = (k: keyof typeof form, v: string) =>
-    setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const campaignName = useMemo(
-    () => (id: string) => campaigns?.find((c) => c.id === id)?.name ?? "—",
-    [campaigns],
+    () => (id: string) => campaigns.data?.find((c) => c.id === id)?.name ?? "—",
+    [campaigns.data],
   );
+  const noCampaign = !campaigns.data?.length;
 
-  async function create(e: FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    try {
-      await api("/content", { method: "POST", body: form });
-      toast(`Đã tạo bài "${form.title}"`, "success");
-      setForm({ campaignId: "", title: "", contentType: "BLOG", body: "" });
-      setOpen(false);
-      reload();
-    } catch (err) {
-      toast(err instanceof Error ? err.message : "Lỗi tạo nội dung", "error");
-    } finally {
-      setBusy(false);
-    }
+  function create() {
+    run(() => resources.content.create(form), {
+      success: `Đã tạo bài "${form.title}"`,
+      onSuccess: () => {
+        setForm({ campaignId: "", title: "", contentType: "BLOG", body: "" });
+        setOpen(false);
+        reload();
+      },
+    });
   }
-
-  const noCampaign = !campaigns?.length;
 
   return (
     <div className="flex flex-col gap-8">
@@ -73,10 +68,8 @@ export default function ContentListPage() {
             <div className="w-52">
               <Select value={filter} onChange={(e) => setFilter(e.target.value)}>
                 <option value="">Tất cả chiến dịch</option>
-                {campaigns?.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
+                {campaigns.data?.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </Select>
             </div>
@@ -89,16 +82,20 @@ export default function ContentListPage() {
 
       {open && (
         <Card>
-          <form onSubmit={create} className="flex flex-col gap-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              create();
+            }}
+            className="flex flex-col gap-4"
+          >
             <div className="flex flex-wrap gap-4">
               <div className="min-w-52 flex-1">
                 <Field label="Chiến dịch">
                   <Select value={form.campaignId} onChange={(e) => set("campaignId", e.target.value)} required>
                     <option value="">— chọn —</option>
-                    {campaigns?.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
+                    {campaigns.data?.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </Select>
                 </Field>
@@ -112,9 +109,7 @@ export default function ContentListPage() {
                 <Field label="Loại">
                   <Select value={form.contentType} onChange={(e) => set("contentType", e.target.value)}>
                     {TYPES.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
+                      <option key={t} value={t}>{t}</option>
                     ))}
                   </Select>
                 </Field>
@@ -124,15 +119,15 @@ export default function ContentListPage() {
               <Textarea rows={3} value={form.body} onChange={(e) => set("body", e.target.value)} required />
             </Field>
             <div>
-              <Button type="submit" variant="primary" loading={busy}>
-                Tạo bài
-              </Button>
+              <Button type="submit" variant="primary" loading={busy}>Tạo bài</Button>
             </div>
           </form>
         </Card>
       )}
 
-      {loading ? (
+      {error ? (
+        <ErrorState message={error} onRetry={reload} />
+      ) : loading ? (
         <ListSkeleton />
       ) : noCampaign ? (
         <EmptyState
@@ -149,9 +144,7 @@ export default function ContentListPage() {
           title="Chưa có bài nào"
           hint="Tạo bài đầu tiên — viết tay hoặc để AI sinh nháp cho bạn."
           action={
-            <Button variant="primary" onClick={() => setOpen(true)}>
-              Viết bài đầu tiên
-            </Button>
+            <Button variant="primary" onClick={() => setOpen(true)}>Viết bài đầu tiên</Button>
           }
         />
       ) : (

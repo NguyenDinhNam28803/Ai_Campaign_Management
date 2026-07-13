@@ -85,6 +85,22 @@ export interface ContentPiece {
   updatedAt: string;
 }
 
+export type IngestStatus = "PENDING" | "PROCESSING" | "READY" | "FAILED";
+export type SourceType =
+  | "BRAND_GUIDELINE"
+  | "PRODUCT_DOC"
+  | "PAST_ARTICLE"
+  | "URL";
+
+export interface KnowledgeSource {
+  id: string;
+  name: string;
+  sourceType: SourceType;
+  productLineId: string | null;
+  status: IngestStatus;
+  createdAt: string;
+}
+
 export interface AIGeneration {
   id: string;
   status: JobStatus;

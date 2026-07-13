@@ -1,14 +1,15 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { api } from "@/lib/api";
+import { useState } from "react";
 import { useApi } from "@/lib/use-api";
-import { useToast } from "@/components/toast";
+import { useMutation } from "@/lib/use-mutation";
+import { resources } from "@/lib/resources";
 import type { Role, User } from "@/lib/types";
 import {
   Badge,
   Button,
   Card,
+  ErrorState,
   Field,
   Input,
   ListSkeleton,
@@ -18,47 +19,40 @@ import {
 const ROLES: Role[] = ["ADMIN", "MANAGER", "EDITOR", "WRITER"];
 
 export default function UsersSettingsPage() {
-  const toast = useToast();
-  const { data, loading, reload } = useApi<User[]>("/users");
-  const [form, setForm] = useState({
-    email: "",
-    fullName: "",
-    password: "",
-    role: "WRITER" as Role,
-  });
-  const [busy, setBusy] = useState(false);
-  const set = (k: keyof typeof form, v: string) =>
-    setForm((f) => ({ ...f, [k]: v }));
+  const { data, loading, error, reload } = useApi<User[]>(
+    () => resources.users.list(),
+    "users",
+  );
+  const { run, busy } = useMutation();
 
-  async function create(e: FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    try {
-      await api("/users", { method: "POST", body: form });
-      toast(`Đã thêm ${form.email}`, "success");
-      setForm({ email: "", fullName: "", password: "", role: "WRITER" });
-      reload();
-    } catch (err) {
-      toast(err instanceof Error ? err.message : "Thêm thất bại", "error");
-    } finally {
-      setBusy(false);
-    }
+  const [form, setForm] = useState({ email: "", fullName: "", password: "", role: "WRITER" as Role });
+  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  function create() {
+    run(() => resources.users.create(form), {
+      success: `Đã thêm ${form.email}`,
+      onSuccess: () => {
+        setForm({ email: "", fullName: "", password: "", role: "WRITER" });
+        reload();
+      },
+    });
   }
 
-  async function disable(u: User) {
-    try {
-      await api(`/users/${u.id}`, { method: "DELETE" });
-      toast(`Đã vô hiệu hóa ${u.email}`, "success");
-      reload();
-    } catch (err) {
-      toast(err instanceof Error ? err.message : "Thao tác thất bại", "error");
-    }
+  function disable(u: User) {
+    if (!window.confirm(`Vô hiệu hóa tài khoản ${u.email}? Người này sẽ không đăng nhập được.`)) return;
+    run(() => resources.users.disable(u.id), { success: `Đã vô hiệu hóa ${u.email}`, onSuccess: reload });
   }
 
   return (
     <div className="flex flex-col gap-6">
       <Card>
-        <form onSubmit={create} className="flex flex-wrap items-end gap-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            create();
+          }}
+          className="flex flex-wrap items-end gap-4"
+        >
           <div className="min-w-48 flex-1">
             <Field label="Email">
               <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} required />
@@ -78,20 +72,18 @@ export default function UsersSettingsPage() {
             <Field label="Vai trò">
               <Select value={form.role} onChange={(e) => set("role", e.target.value)}>
                 {ROLES.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
+                  <option key={r} value={r}>{r}</option>
                 ))}
               </Select>
             </Field>
           </div>
-          <Button type="submit" variant="primary" loading={busy}>
-            Thêm
-          </Button>
+          <Button type="submit" variant="primary" loading={busy}>Thêm</Button>
         </form>
       </Card>
 
-      {loading ? (
+      {error ? (
+        <ErrorState message={error} onRetry={reload} />
+      ) : loading ? (
         <ListSkeleton />
       ) : (
         <div className="flex flex-col gap-2">
@@ -105,9 +97,7 @@ export default function UsersSettingsPage() {
                 <Badge tone={u.role === "ADMIN" ? "accent" : "neutral"}>{u.role}</Badge>
                 <Badge tone={u.status === "ACTIVE" ? "green" : "red"}>{u.status}</Badge>
                 {u.status === "ACTIVE" && (
-                  <Button variant="ghost" onClick={() => disable(u)}>
-                    Vô hiệu hóa
-                  </Button>
+                  <Button variant="ghost" onClick={() => disable(u)}>Vô hiệu hóa</Button>
                 )}
               </div>
             </Card>

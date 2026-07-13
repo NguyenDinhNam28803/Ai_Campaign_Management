@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
-import { api } from "@/lib/api";
+import { useState } from "react";
 import { useApi } from "@/lib/use-api";
+import { useMutation } from "@/lib/use-mutation";
 import { useAuth } from "@/lib/auth";
-import { useToast } from "@/components/toast";
+import { resources } from "@/lib/resources";
+import { isManager } from "@/lib/rbac";
 import type { Campaign, ProductLine } from "@/lib/types";
 import {
   Badge,
   Button,
   Card,
   EmptyState,
+  ErrorState,
   Field,
   Input,
   ListSkeleton,
@@ -21,79 +23,94 @@ import {
 
 export default function CampaignsPage() {
   const { user } = useAuth();
-  const toast = useToast();
-  const canManage = user?.role === "ADMIN" || user?.role === "MANAGER";
-  const { data: pls } = useApi<ProductLine[]>("/product-lines");
-  const { data, loading, reload } = useApi<Campaign[]>("/campaigns");
+  const canManage = isManager(user?.role);
+  const pls = useApi<ProductLine[]>(() => resources.productLines.list(), "product-lines");
+  const { data, loading, error, reload } = useApi<Campaign[]>(
+    () => resources.campaigns.list(),
+    "campaigns",
+  );
+  const { run, busy } = useMutation();
 
-  const [productLineId, setProductLineId] = useState("");
-  const [name, setName] = useState("");
-  const [goal, setGoal] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ productLineId: "", name: "", goal: "" });
+  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const plName = (id: string) => pls.data?.find((p) => p.id === id)?.name ?? "—";
 
-  const plName = (id: string) => pls?.find((p) => p.id === id)?.name ?? "—";
-
-  async function create(e: FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    try {
-      await api("/campaigns", {
-        method: "POST",
-        body: { productLineId, name, goal: goal || undefined },
-      });
-      toast(`Đã tạo chiến dịch "${name}"`, "success");
-      setName("");
-      setGoal("");
-      reload();
-    } catch (err) {
-      toast(err instanceof Error ? err.message : "Lỗi tạo chiến dịch", "error");
-    } finally {
-      setBusy(false);
-    }
+  function create() {
+    run(
+      () =>
+        resources.campaigns.create({
+          productLineId: form.productLineId,
+          name: form.name,
+          goal: form.goal || undefined,
+        }),
+      {
+        success: `Đã tạo chiến dịch "${form.name}"`,
+        onSuccess: () => {
+          setForm({ productLineId: "", name: "", goal: "" });
+          setOpen(false);
+          reload();
+        },
+      },
+    );
   }
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader title="Chiến dịch" subtitle="Nhóm nội dung theo mục tiêu marketing." />
+      <PageHeader
+        title="Chiến dịch"
+        subtitle="Nhóm nội dung theo mục tiêu marketing."
+        action={
+          canManage && (
+            <Button variant="primary" onClick={() => setOpen((o) => !o)}>
+              Thêm chiến dịch
+            </Button>
+          )
+        }
+      />
 
-      {canManage && (
+      {open && canManage && (
         <Card>
-          <form onSubmit={create} className="flex flex-wrap items-end gap-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              create();
+            }}
+            className="flex flex-wrap items-end gap-4"
+          >
             <div className="min-w-52 flex-1">
               <Field label="Dòng sản phẩm">
-                <Select value={productLineId} onChange={(e) => setProductLineId(e.target.value)} required>
+                <Select value={form.productLineId} onChange={(e) => set("productLineId", e.target.value)} required>
                   <option value="">— chọn —</option>
-                  {pls?.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
+                  {pls.data?.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
                 </Select>
               </Field>
             </div>
             <div className="min-w-48 flex-1">
               <Field label="Tên chiến dịch">
-                <Input value={name} onChange={(e) => setName(e.target.value)} required />
+                <Input value={form.name} onChange={(e) => set("name", e.target.value)} required />
               </Field>
             </div>
             <div className="min-w-48 flex-1">
               <Field label="Mục tiêu (tùy chọn)">
-                <Input value={goal} onChange={(e) => setGoal(e.target.value)} />
+                <Input value={form.goal} onChange={(e) => set("goal", e.target.value)} />
               </Field>
             </div>
-            <Button type="submit" variant="primary" loading={busy}>
-              Thêm
-            </Button>
+            <Button type="submit" variant="primary" loading={busy}>Lưu</Button>
           </form>
         </Card>
       )}
 
-      {loading ? (
+      {error ? (
+        <ErrorState message={error} onRetry={reload} />
+      ) : loading ? (
         <ListSkeleton />
       ) : !data?.length ? (
         <EmptyState
           title="Chưa có chiến dịch"
-          hint={canManage ? "Tạo chiến dịch đầu tiên ở trên." : "Chưa có chiến dịch nào."}
+          hint={canManage ? "Tạo chiến dịch đầu tiên để bắt đầu." : "Chưa có chiến dịch nào."}
         />
       ) : (
         <div className="flex flex-col gap-2">
