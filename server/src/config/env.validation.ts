@@ -44,6 +44,19 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   SEED_ADMIN_PASSWORD!: string;
+
+  // --- P2 (tùy chọn cho tới khi module Generator/AI dùng tới) ---
+  @IsString()
+  @IsOptional()
+  REDIS_URL?: string;
+
+  @IsString()
+  @IsOptional()
+  OPENAI_API_KEY?: string;
+
+  @IsString()
+  @IsOptional()
+  OPENAI_MODEL: string = 'gpt-4o-mini';
 }
 
 export function validate(config: Record<string, unknown>): EnvironmentVariables {

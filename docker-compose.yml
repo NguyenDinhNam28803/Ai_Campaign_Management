@@ -1,0 +1,19 @@
+# Hạ tầng local cho phát triển.
+# CSDL PostgreSQL dùng Supabase (cloud) — ở đây chỉ chạy Redis cho BullMQ (P2+).
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: ai_campaign_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  redis_data:
