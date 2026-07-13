@@ -14,6 +14,7 @@ import {
   EmptyState,
   ErrorState,
   Field,
+  Icon,
   Input,
   ListSkeleton,
   PageHeader,
@@ -47,6 +48,7 @@ export default function ProductLinesPage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
+        eyebrow="Cấu hình nội dung"
         title="Dòng sản phẩm"
         subtitle="Mỗi dòng sản phẩm gom chiến dịch, tri thức và giọng văn riêng."
         action={
@@ -90,6 +92,7 @@ export default function ProductLinesPage() {
         <ListSkeleton rows={3} />
       ) : !data?.length ? (
         <EmptyState
+          icon="layers"
           title="Chưa có dòng sản phẩm"
           hint={canManage ? "Tạo dòng sản phẩm đầu tiên để bắt đầu." : "Chưa có dòng sản phẩm nào được tạo."}
           action={
@@ -105,9 +108,18 @@ export default function ProductLinesPage() {
           {data.map((pl) => (
             <Link key={pl.id} href={`/product-lines/${pl.id}`}>
               <Card className="p-4 transition-colors hover:border-muted/40">
-                <div className="font-medium">{pl.name}</div>
-                <div className="mt-0.5 font-mono text-xs text-muted">{pl.slug}</div>
-                <div className="mt-2 text-xs text-accent">Giọng văn →</div>
+                <div className="flex items-center gap-3">
+                  <span className="grid h-9 w-9 flex-none place-items-center rounded-md bg-paper text-muted">
+                    <Icon name="layers" size={18} />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">{pl.name}</div>
+                    <div className="truncate font-mono text-xs text-muted">{pl.slug}</div>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center gap-1 text-xs text-accent">
+                  Giọng văn <Icon name="chevronRight" size={13} />
+                </div>
               </Card>
             </Link>
           ))}

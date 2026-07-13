@@ -17,6 +17,7 @@ export default function ReviewQueuePage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
+        eyebrow="Quy trình"
         title="Hàng đợi duyệt"
         subtitle="Các bài đang chờ duyệt. Mở một bài để duyệt hoặc yêu cầu sửa."
       />

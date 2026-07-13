@@ -15,6 +15,7 @@ import {
   EmptyState,
   ErrorState,
   Field,
+  Icon,
   Input,
   ListSkeleton,
   PageHeader,
@@ -58,6 +59,7 @@ export default function CampaignsPage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
+        eyebrow="Kế hoạch"
         title="Chiến dịch"
         subtitle="Nhóm nội dung theo mục tiêu marketing."
         action={
@@ -109,6 +111,7 @@ export default function CampaignsPage() {
         <ListSkeleton />
       ) : !data?.length ? (
         <EmptyState
+          icon="megaphone"
           title="Chưa có chiến dịch"
           hint={canManage ? "Tạo chiến dịch đầu tiên để bắt đầu." : "Chưa có chiến dịch nào."}
         />
@@ -117,11 +120,16 @@ export default function CampaignsPage() {
           {data.map((c) => (
             <Link key={c.id} href={`/campaigns/${c.id}`}>
               <Card className="flex items-center justify-between p-4 transition-colors hover:border-muted/40">
-                <div>
-                  <div className="font-medium">{c.name}</div>
-                  <div className="mt-0.5 text-xs text-muted">
-                    {plName(c.productLineId)}
-                    {c.goal ? ` · ${c.goal}` : ""}
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="grid h-9 w-9 flex-none place-items-center rounded-md bg-paper text-muted">
+                    <Icon name="megaphone" size={18} />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">{c.name}</div>
+                    <div className="mt-0.5 truncate text-xs text-muted">
+                      {plName(c.productLineId)}
+                      {c.goal ? ` · ${c.goal}` : ""}
+                    </div>
                   </div>
                 </div>
                 <Badge>{c.status}</Badge>

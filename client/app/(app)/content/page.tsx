@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useApi } from "@/lib/use-api";
 import { useMutation } from "@/lib/use-mutation";
@@ -18,12 +19,16 @@ import {
   ListSkeleton,
   PageHeader,
   Select,
+  Table,
+  Td,
   Textarea,
+  Th,
 } from "@/components/ui";
 
 const TYPES: ContentType[] = ["BLOG", "SOCIAL", "EMAIL", "LANDING"];
 
 export default function ContentListPage() {
+  const router = useRouter();
   const campaigns = useApi<Campaign[]>(() => resources.campaigns.list(), "campaigns");
   const [filter, setFilter] = useState("");
   const { data, loading, error, reload } = useApi<ContentPiece[]>(
@@ -61,7 +66,8 @@ export default function ContentListPage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
-        title="Nội dung"
+        eyebrow="Nội dung"
+        title="Bài viết"
         subtitle="Viết, duyệt và sinh nội dung bằng AI."
         action={
           <div className="flex items-center gap-3">
@@ -131,6 +137,7 @@ export default function ContentListPage() {
         <ListSkeleton />
       ) : noCampaign ? (
         <EmptyState
+          icon="megaphone"
           title="Chưa có chiến dịch nào"
           hint="Nội dung phải thuộc một chiến dịch. Tạo chiến dịch trước đã."
           action={
@@ -141,31 +148,43 @@ export default function ContentListPage() {
         />
       ) : !data?.length ? (
         <EmptyState
+          icon="doc"
           title="Chưa có bài nào"
           hint="Tạo bài đầu tiên — viết tay hoặc để AI sinh nháp cho bạn."
-          action={
-            <Button variant="primary" onClick={() => setOpen(true)}>Viết bài đầu tiên</Button>
-          }
+          action={<Button variant="primary" onClick={() => setOpen(true)}>Viết bài đầu tiên</Button>}
         />
       ) : (
-        <div className="flex flex-col gap-2">
+        <Table
+          head={
+            <>
+              <Th>Tiêu đề</Th>
+              <Th>Chiến dịch</Th>
+              <Th>Loại</Th>
+              <Th>Trạng thái</Th>
+              <Th className="text-right">Cập nhật</Th>
+            </>
+          }
+        >
           {data.map((p) => (
-            <Link key={p.id} href={`/content/${p.id}`}>
-              <Card className="flex items-center justify-between p-4 transition-colors hover:border-muted/40">
-                <div>
-                  <div className="font-medium">{p.title}</div>
-                  <div className="mt-0.5 text-xs text-muted">
-                    {campaignName(p.campaignId)} · {p.contentType}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge>{p.contentType}</Badge>
-                  <ContentStatusBadge status={p.status} />
-                </div>
-              </Card>
-            </Link>
+            <tr
+              key={p.id}
+              onClick={() => router.push(`/content/${p.id}`)}
+              className="cursor-pointer transition-colors hover:bg-paper"
+            >
+              <Td className="font-medium text-ink">{p.title}</Td>
+              <Td className="text-muted">{campaignName(p.campaignId)}</Td>
+              <Td>
+                <Badge>{p.contentType}</Badge>
+              </Td>
+              <Td>
+                <ContentStatusBadge status={p.status} />
+              </Td>
+              <Td className="text-right text-xs text-muted">
+                {new Date(p.updatedAt).toLocaleDateString("vi-VN")}
+              </Td>
+            </tr>
           ))}
-        </div>
+        </Table>
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "./cn";
+import { Icon, type IconName } from "./icon";
 
 /* ── Badge ──────────────────────────────────────────────── */
 type Tone = "neutral" | "accent" | "green" | "amber" | "red";
@@ -33,16 +34,21 @@ export function Spinner() {
 
 /* ── EmptyState ─────────────────────────────────────────── */
 export function EmptyState({
+  icon = "inbox",
   title,
   hint,
   action,
 }: {
+  icon?: IconName;
   title: string;
   hint?: string;
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-muted/30 bg-surface/50 px-6 py-14 text-center">
+    <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-muted/30 bg-surface/50 px-6 py-16 text-center">
+      <div className="grid h-12 w-12 place-items-center rounded-full bg-paper text-muted">
+        <Icon name={icon} size={22} />
+      </div>
       <p className="font-medium text-ink">{title}</p>
       {hint && <p className="max-w-md text-sm text-muted">{hint}</p>}
       {action && <div className="mt-1 flex gap-3">{action}</div>}

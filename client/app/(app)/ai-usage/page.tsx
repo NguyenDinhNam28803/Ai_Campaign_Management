@@ -33,6 +33,7 @@ export default function AiUsagePage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
+        eyebrow="Minh bạch"
         title="Chi phí AI"
         subtitle="Minh bạch chi tiêu AI trong kỳ so với ngân sách tháng."
       />
