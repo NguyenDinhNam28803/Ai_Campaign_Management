@@ -1,0 +1,367 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [vector]
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  EDITOR
+  WRITER
+}
+
+enum UserStatus {
+  ACTIVE
+  INVITED
+  DISABLED
+}
+
+enum PLStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum CampaignStatus {
+  PLANNING
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum ContentType {
+  BLOG
+  SOCIAL
+  EMAIL
+  LANDING
+}
+
+enum ContentStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum VersionSource {
+  AI_DRAFT
+  HUMAN_EDIT
+  AI_REFINE
+}
+
+enum ReviewDecision {
+  APPROVED
+  CHANGES_REQUESTED
+  COMMENT
+}
+
+enum AiMode {
+  GENERATOR
+  ASSISTANT
+}
+
+enum AiStep {
+  BRIEF
+  OUTLINE
+  DRAFT
+  SEO_REFINE
+  ASSIST_REWRITE
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  DONE
+  FAILED
+}
+
+enum SourceType {
+  BRAND_GUIDELINE
+  PRODUCT_DOC
+  PAST_ARTICLE
+  URL
+}
+
+enum IngestStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum ChannelType {
+  WORDPRESS
+  GHOST
+  FACEBOOK
+  LINKEDIN
+  X
+}
+
+enum ChannelStatus {
+  ACTIVE
+  DISCONNECTED
+}
+
+enum PublishStatus {
+  PENDING
+  PUBLISHING
+  LIVE
+  FAILED
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
+
+enum MetricSource {
+  GA4
+  FACEBOOK
+  LINKEDIN
+  X
+}
+
+model Organization {
+  id                 String   @id @default(uuid())
+  name               String
+  monthlyAiBudgetUsd Decimal  @default(0) @db.Decimal(10, 2)
+  aiSpendPeriodUsd   Decimal  @default(0) @db.Decimal(10, 2)
+  defaultModel       String   @default("gpt-4o-mini")
+  billingPeriodStart DateTime @db.Date
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  passwordHash String?
+  fullName     String
+  avatarUrl    String?
+  role         Role       @default(WRITER)
+  status       UserStatus @default(ACTIVE)
+  reviews      Review[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model ProductLine {
+  id           String            @id @default(uuid())
+  name         String
+  slug         String            @unique
+  voiceProfile Json?
+  status       PLStatus          @default(ACTIVE)
+  campaigns    Campaign[]
+  knowledge    KnowledgeSource[]
+  channels     Channel[]
+  deletedAt    DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+}
+
+model Campaign {
+  id            String         @id @default(uuid())
+  productLineId String
+  name          String
+  goal          String?
+  status        CampaignStatus @default(PLANNING)
+  startDate     DateTime?      @db.Date
+  endDate       DateTime?      @db.Date
+  createdBy     String
+  productLine   ProductLine    @relation(fields: [productLineId], references: [id])
+  pieces        ContentPiece[]
+  deletedAt     DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([productLineId, status])
+}
+
+model ContentPiece {
+  id               String           @id @default(uuid())
+  productLineId    String
+  campaignId       String
+  currentVersionId String?          @unique
+  assigneeId       String?
+  title            String
+  contentType      ContentType
+  status           ContentStatus    @default(DRAFT)
+  createdBy        String
+  campaign         Campaign         @relation(fields: [campaignId], references: [id])
+  currentVersion   ContentVersion?  @relation("current", fields: [currentVersionId], references: [id])
+  versions         ContentVersion[] @relation("history")
+  generations      AIGeneration[]
+  publications     Publication[]
+  reviews          Review[]
+  deletedAt        DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([productLineId, status])
+  @@index([campaignId])
+}
+
+model ContentVersion {
+  id             String        @id @default(uuid())
+  pieceId        String
+  aiGenerationId String?
+  versionNumber  Int
+  body           String
+  source         VersionSource
+  createdBy      String?
+  piece          ContentPiece  @relation("history", fields: [pieceId], references: [id])
+  currentOf      ContentPiece? @relation("current")
+  reviews        Review[]
+  publications   Publication[]
+  createdAt      DateTime      @default(now())
+
+  @@unique([pieceId, versionNumber])
+}
+
+model Review {
+  id         String         @id @default(uuid())
+  pieceId    String
+  versionId  String
+  reviewerId String
+  decision   ReviewDecision
+  comment    String?
+  piece      ContentPiece   @relation(fields: [pieceId], references: [id])
+  version    ContentVersion @relation(fields: [versionId], references: [id])
+  reviewer   User           @relation(fields: [reviewerId], references: [id])
+  createdAt  DateTime       @default(now())
+
+  @@index([pieceId])
+}
+
+model AIGeneration {
+  id                String        @id @default(uuid())
+  productLineId     String?
+  pieceId           String?
+  mode              AiMode
+  step              AiStep
+  status            JobStatus     @default(QUEUED)
+  model             String
+  promptVersion     String
+  inputTokens       Int?
+  outputTokens      Int?
+  costUsd           Decimal?      @db.Decimal(10, 6)
+  retrievedChunkIds String[]      @db.Uuid
+  error             String?
+  createdBy         String
+  piece             ContentPiece? @relation(fields: [pieceId], references: [id])
+  createdAt         DateTime      @default(now())
+  completedAt       DateTime?
+
+  @@index([createdAt])
+  @@index([status])
+}
+
+model KnowledgeSource {
+  id            String           @id @default(uuid())
+  productLineId String?
+  name          String
+  sourceType    SourceType
+  originalUrl   String?
+  status        IngestStatus     @default(PENDING)
+  productLine   ProductLine?     @relation(fields: [productLineId], references: [id])
+  chunks        KnowledgeChunk[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([productLineId])
+}
+
+model KnowledgeChunk {
+  id            String                       @id @default(uuid())
+  productLineId String?
+  sourceId      String
+  chunkIndex    Int
+  content       String
+  embedding     Unsupported("vector(1536)")?
+  tokenCount    Int
+  source        KnowledgeSource              @relation(fields: [sourceId], references: [id])
+  createdAt     DateTime                     @default(now())
+
+  @@index([productLineId])
+}
+
+model Channel {
+  id                   String        @id @default(uuid())
+  productLineId        String
+  type                 ChannelType
+  name                 String
+  config               Json
+  credentialsEncrypted String
+  status               ChannelStatus @default(ACTIVE)
+  productLine          ProductLine   @relation(fields: [productLineId], references: [id])
+  publications         Publication[]
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  @@index([productLineId])
+}
+
+model Publication {
+  id            String           @id @default(uuid())
+  productLineId String
+  pieceId       String
+  versionId     String
+  channelId     String
+  status        PublishStatus    @default(PENDING)
+  scheduledAt   DateTime?
+  publishedAt   DateTime?
+  externalId    String?
+  externalUrl   String?
+  retryCount    Int              @default(0)
+  lastError     String?
+  piece         ContentPiece     @relation(fields: [pieceId], references: [id])
+  version       ContentVersion   @relation(fields: [versionId], references: [id])
+  channel       Channel          @relation(fields: [channelId], references: [id])
+  metrics       MetricSnapshot[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([status, scheduledAt])
+  @@index([productLineId, status])
+}
+
+model OutboxEvent {
+  id            String       @id @default(uuid())
+  aggregateType String
+  aggregateId   String
+  eventType     String
+  payload       Json
+  status        OutboxStatus @default(PENDING)
+  retryCount    Int          @default(0)
+  processedAt   DateTime?
+  createdAt     DateTime     @default(now())
+
+  @@index([status, createdAt])
+}
+
+model MetricSnapshot {
+  id             String       @id @default(uuid())
+  productLineId  String
+  publicationId  String
+  source         MetricSource
+  pageviews      Int          @default(0)
+  uniqueVisitors Int          @default(0)
+  engagements    Int          @default(0)
+  conversions    Int          @default(0)
+  rawMetrics     Json?
+  capturedAt     DateTime
+  publication    Publication  @relation(fields: [publicationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([publicationId, capturedAt])
+  @@index([productLineId, capturedAt])
+}
