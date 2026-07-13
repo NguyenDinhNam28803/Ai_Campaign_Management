@@ -1,6 +1,7 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigType } from '@nestjs/config';
+import redisConfig from '../config/redis.config';
 import { BudgetService } from './budget/budget.service';
 import { GenerationController } from './generation/generation.controller';
 import { GenerationPipeline } from './generation/generation.pipeline';
@@ -15,12 +16,9 @@ import { OpenAIProvider } from './llm/openai.provider';
 @Module({
   imports: [
     BullModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        const url = new URL(
-          config.get<string>('REDIS_URL') ?? 'redis://localhost:6379',
-        );
+      inject: [redisConfig.KEY],
+      useFactory: (redis: ConfigType<typeof redisConfig>) => {
+        const url = new URL(redis.url);
         return {
           connection: {
             host: url.hostname,

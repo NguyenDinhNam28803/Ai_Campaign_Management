@@ -1,9 +1,10 @@
 import { InjectQueue } from '@nestjs/bullmq';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import type { NsConfigType } from '../../config/config.types';
 import { AiMode, AiStep, JobStatus } from '@prisma/client';
 import { Queue } from 'bullmq';
 import { AuthUser } from '../../auth/decorators/current-user.decorator';
+import openaiConfig from '../../config/openai.config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { assertCanEditPiece } from '../../content/ownership';
 import { BudgetService } from '../budget/budget.service';
@@ -15,7 +16,8 @@ export class GenerationService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly budget: BudgetService,
-    private readonly config: ConfigService,
+    @Inject(openaiConfig.KEY)
+    private readonly openai: NsConfigType<typeof openaiConfig>,
     @InjectQueue(GENERATION_QUEUE) private readonly queue: Queue,
   ) {}
 
@@ -32,7 +34,7 @@ export class GenerationService {
     }
     assertCanEditPiece(user, piece);
 
-    const model = this.config.get<string>('OPENAI_MODEL') ?? 'gpt-4o-mini';
+    const model = this.openai.model;
 
     // 2) Bản ghi generation (QUEUED) = nguồn sự thật trạng thái job.
     const gen = await this.prisma.aIGeneration.create({

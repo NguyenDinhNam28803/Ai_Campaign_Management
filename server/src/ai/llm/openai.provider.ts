@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { NsConfigType } from '../../config/config.types';
 import OpenAI from 'openai';
+import openaiConfig from '../../config/openai.config';
 import {
   CompleteParams,
   GenerationResult,
@@ -13,13 +14,15 @@ export class OpenAIProvider implements LLMProvider {
   private readonly client: OpenAI;
   private readonly defaultModel: string;
 
-  constructor(config: ConfigService) {
-    const apiKey = config.get<string>('OPENAI_API_KEY');
-    if (!apiKey) {
+  constructor(
+    @Inject(openaiConfig.KEY)
+    private readonly config: NsConfigType<typeof openaiConfig>,
+  ) {
+    if (!config.apiKey) {
       this.logger.warn('OPENAI_API_KEY chưa cấu hình — gọi LLM sẽ lỗi.');
     }
-    this.client = new OpenAI({ apiKey: apiKey ?? 'missing' });
-    this.defaultModel = config.get<string>('OPENAI_MODEL') ?? 'gpt-4o-mini';
+    this.client = new OpenAI({ apiKey: config.apiKey || 'missing' });
+    this.defaultModel = config.model;
   }
 
   async complete({

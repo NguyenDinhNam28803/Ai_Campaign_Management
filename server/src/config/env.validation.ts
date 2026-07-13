@@ -34,6 +34,10 @@ export class EnvironmentVariables {
   PORT: number = 3000;
 
   @IsString()
+  @IsOptional()
+  CORS_ORIGIN?: string;
+
+  @IsString()
   @IsNotEmpty()
   SEED_ORG_NAME!: string;
 

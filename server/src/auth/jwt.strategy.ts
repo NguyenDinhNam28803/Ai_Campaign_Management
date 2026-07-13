@@ -1,7 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import type { NsConfigType } from '../config/config.types';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import authConfig from '../config/auth.config';
 import { AuthUser } from './decorators/current-user.decorator';
 
 export interface JwtPayload {
@@ -12,15 +13,17 @@ export interface JwtPayload {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(config: ConfigService) {
-    const secret = config.get<string>('JWT_SECRET');
-    if (!secret) {
+  constructor(
+    @Inject(authConfig.KEY)
+    config: NsConfigType<typeof authConfig>,
+  ) {
+    if (!config.jwtSecret) {
       throw new UnauthorizedException('JWT_SECRET chưa cấu hình');
     }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: secret,
+      secretOrKey: config.jwtSecret,
     });
   }
 
