@@ -4,6 +4,13 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  // Cho phép frontend (dev: localhost:3002) gọi API. Dùng Bearer token nên không cần cookie.
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN?.split(',') ?? true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type,Authorization,Accept',
+    credentials: true,
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
