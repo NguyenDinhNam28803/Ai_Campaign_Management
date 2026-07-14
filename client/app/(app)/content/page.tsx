@@ -168,8 +168,17 @@ export default function ContentListPage() {
           {data.map((p) => (
             <tr
               key={p.id}
+              tabIndex={0}
+              role="link"
+              aria-label={`Mở bài ${p.title}`}
               onClick={() => router.push(`/content/${p.id}`)}
-              className="cursor-pointer transition-colors hover:bg-paper"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  router.push(`/content/${p.id}`);
+                }
+              }}
+              className="cursor-pointer transition-colors hover:bg-paper focus-visible:bg-paper"
             >
               <Td className="font-medium text-ink">{p.title}</Td>
               <Td className="text-muted">{campaignName(p.campaignId)}</Td>

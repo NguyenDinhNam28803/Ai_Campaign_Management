@@ -83,6 +83,8 @@ const PATHS: Record<string, ReactNode> = {
       <circle cx="8" cy="17" r="2" />
     </>
   ),
+  menu: <path d="M4 7h16M4 12h16M4 17h16" />,
+  close: <path d="M6 6l12 12M18 6L6 18" />,
 };
 
 export type IconName = keyof typeof PATHS;

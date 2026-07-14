@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { Icon, type IconName, Spinner, cn } from "@/components/ui";
 import type { Role } from "@/lib/types";
@@ -29,14 +29,34 @@ const NAV: {
   },
 ];
 
+function Logo() {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="grid h-8 w-8 place-items-center rounded-md bg-accent text-white">
+        <Icon name="sparkles" size={18} />
+      </span>
+      <div className="leading-tight">
+        <div className="text-sm font-semibold text-ink">AI Content</div>
+        <div className="text-[0.68rem] uppercase tracking-widest text-muted">Platform</div>
+      </div>
+    </div>
+  );
+}
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
   }, [user, loading, router]);
+
+  // Đóng menu mobile khi đổi route.
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   if (loading || !user) {
     return (
@@ -50,18 +70,29 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const initials = user.email.slice(0, 2).toUpperCase();
 
   return (
-    <div className="mx-auto flex min-h-full max-w-6xl">
+    <div className="mx-auto flex min-h-full max-w-6xl flex-col md:flex-row">
+      {/* Thanh trên (mobile) */}
+      <div className="flex items-center justify-between border-b border-muted/15 px-4 py-3 md:hidden">
+        <Logo />
+        <button
+          onClick={() => setMobileOpen((o) => !o)}
+          aria-label={mobileOpen ? "Đóng menu" : "Mở menu"}
+          aria-expanded={mobileOpen}
+          className="grid h-9 w-9 place-items-center rounded-md text-muted hover:bg-paper hover:text-ink"
+        >
+          <Icon name={mobileOpen ? "close" : "menu"} size={20} />
+        </button>
+      </div>
+
       {/* Sidebar */}
-      <aside className="flex w-60 flex-none flex-col border-r border-muted/15 px-4 py-6">
-        {/* Logo */}
-        <div className="mb-8 flex items-center gap-2.5 px-2">
-          <span className="grid h-8 w-8 place-items-center rounded-md bg-accent text-white">
-            <Icon name="sparkles" size={18} />
-          </span>
-          <div className="leading-tight">
-            <div className="text-sm font-semibold text-ink">AI Content</div>
-            <div className="text-[0.68rem] uppercase tracking-widest text-muted">Platform</div>
-          </div>
+      <aside
+        className={cn(
+          "flex-none flex-col border-muted/15 px-4 py-6 md:flex md:w-60 md:border-r",
+          mobileOpen ? "flex border-b" : "hidden",
+        )}
+      >
+        <div className="mb-8 hidden px-2 md:block">
+          <Logo />
         </div>
 
         <nav className="flex flex-col gap-0.5">
@@ -85,8 +116,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        {/* User */}
-        <div className="mt-auto flex items-center gap-2.5 border-t border-muted/15 pt-4">
+        <div className="mt-6 flex items-center gap-2.5 border-t border-muted/15 pt-4 md:mt-auto">
           <span className="grid h-9 w-9 flex-none place-items-center rounded-full bg-paper text-xs font-semibold text-ink">
             {initials}
           </span>
@@ -105,8 +135,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Content */}
-      <main className="flex-1 px-10 py-8">{children}</main>
+      {/* Nội dung */}
+      <main className="flex-1 px-5 py-6 md:px-10 md:py-8">{children}</main>
     </div>
   );
 }
