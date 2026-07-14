@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { resources } from "@/lib/resources";
 import { isManager } from "@/lib/rbac";
 import type { Organization } from "@/lib/types";
-import { Card, ErrorState, ListSkeleton, PageHeader } from "@/components/ui";
+import { Card, ErrorState, ListSkeleton, PageHeader, Ring } from "@/components/ui";
 
 export default function AiUsagePage() {
   const { user } = useAuth();
@@ -52,20 +52,37 @@ export default function AiUsagePage() {
           )}
 
           <Card className="max-w-xl">
-            <div className="text-[0.72rem] font-medium uppercase tracking-wide text-muted">
-              Đã dùng trong kỳ
-            </div>
-            <div className="mt-1 text-3xl font-bold tracking-tight">
-              ${spend.toFixed(2)}
-              <span className="ml-2 text-base font-normal text-muted">/ ${budget.toFixed(2)} ngân sách</span>
-            </div>
-            <div className="mt-4 h-2.5 overflow-hidden rounded-sm bg-paper">
-              <div className="h-full bg-accent transition-all" style={{ width: `${Math.min(100, pct)}%` }} />
-            </div>
-            <div className="mt-2 text-xs text-muted">
-              {budget === 0
-                ? "Chưa cấp ngân sách — gọi AI bị chặn cho tới khi đặt trần > 0."
-                : `Còn lại $${Math.max(0, budget - spend).toFixed(2)} · model ${org?.defaultModel}`}
+            <div className="flex items-center gap-8">
+              <Ring
+                pct={pct}
+                color={over80 ? "#b8912f" : "var(--color-accent)"}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="text-[0.72rem] font-medium uppercase tracking-wide text-muted">
+                  Đã dùng trong kỳ
+                </div>
+                <div className="mt-1 text-2xl font-bold tracking-tight">
+                  ${spend.toFixed(2)}
+                  <span className="ml-2 text-base font-normal text-muted">
+                    / ${budget.toFixed(2)}
+                  </span>
+                </div>
+                <dl className="mt-4 flex flex-col gap-1.5 text-sm">
+                  <div className="flex justify-between">
+                    <dt className="text-muted">Còn lại</dt>
+                    <dd className="font-medium">${Math.max(0, budget - spend).toFixed(2)}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-muted">Model</dt>
+                    <dd className="font-mono text-xs">{org?.defaultModel}</dd>
+                  </div>
+                </dl>
+                {budget === 0 && (
+                  <p className="mt-3 text-xs text-muted">
+                    Chưa cấp ngân sách — gọi AI bị chặn cho tới khi đặt trần &gt; 0.
+                  </p>
+                )}
+              </div>
             </div>
           </Card>
 

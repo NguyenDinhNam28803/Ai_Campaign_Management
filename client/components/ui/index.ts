@@ -14,3 +14,4 @@ export { PageHeader } from "./page-header";
 export { Icon, type IconName } from "./icon";
 export { Table, Th, Td } from "./table";
 export { StatCard } from "./stat-card";
+export { Ring } from "./ring";
