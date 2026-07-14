@@ -1,19 +1,18 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useApi } from "@/lib/use-api";
 import { useMutation } from "@/lib/use-mutation";
 import { useAuth } from "@/lib/auth";
-import { useToast } from "@/components/toast";
+import { useGenerationPolling } from "@/lib/use-generation-polling";
 import { resources } from "@/lib/resources";
 import { isManager } from "@/lib/rbac";
-import type { AIGeneration, ContentPiece, ContentVersion, VersionSource } from "@/lib/types";
+import type { ContentPiece, ContentVersion, VersionSource } from "@/lib/types";
 import { ContentStatusBadge, JobStatusBadge } from "@/components/status";
 import { DetailHeader } from "@/components/layout/detail-header";
 import { Badge, Button, Card, ErrorState, Field, ListSkeleton, Textarea } from "@/components/ui";
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const SOURCE_TONE: Record<VersionSource, "neutral" | "accent" | "amber"> = {
   HUMAN_EDIT: "neutral",
   AI_DRAFT: "accent",
@@ -23,19 +22,16 @@ const SOURCE_TONE: Record<VersionSource, "neutral" | "accent" | "amber"> = {
 export default function ContentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const toast = useToast();
-  const stopWatch = useRef(false);
   const canReview = isManager(user?.role);
   const canReopen = canReview || user?.role === "EDITOR";
 
   const piece = useApi<ContentPiece>(() => resources.content.get(id), `content:${id}`);
   const versions = useApi<ContentVersion[]>(() => resources.content.versions(id), `content:${id}:versions`);
   const { run, busy } = useMutation();
+  const { gen, generating, start: generate, stop } = useGenerationPolling(id, versions.reload);
 
   const [editBody, setEditBody] = useState("");
   const [comment, setComment] = useState("");
-  const [gen, setGen] = useState<AIGeneration | null>(null);
-  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     setEditBody(piece.data?.currentVersion?.body ?? "");
@@ -45,34 +41,6 @@ export default function ContentDetailPage() {
     piece.reload();
     versions.reload();
   };
-
-  async function generate() {
-    setGenerating(true);
-    setGen(null);
-    stopWatch.current = false;
-    try {
-      const { generationId } = await resources.content.generate(id);
-      for (let i = 0; i < 45 && !stopWatch.current; i++) {
-        await sleep(i < 5 ? 1000 : i < 12 ? 3000 : 5000);
-        if (stopWatch.current) break;
-        const g = await resources.generations.get(generationId);
-        setGen(g);
-        if (g.status === "DONE") {
-          toast("AI đã sinh xong bản nháp", "success");
-          break;
-        }
-        if (g.status === "FAILED") {
-          toast("AI sinh thất bại — xem chi tiết lỗi", "error");
-          break;
-        }
-      }
-      versions.reload();
-    } catch (e) {
-      toast(e instanceof Error ? e.message : "Lỗi gọi AI", "error");
-    } finally {
-      setGenerating(false);
-    }
-  }
 
   if (piece.error) return <ErrorState message={piece.error} onRetry={piece.reload} />;
   if (piece.loading || !piece.data)
@@ -234,7 +202,7 @@ export default function ContentDetailPage() {
             </Button>
             {generating && (
               <button
-                onClick={() => (stopWatch.current = true)}
+                onClick={stop}
                 className="text-xs text-muted hover:text-accent"
               >
                 Dừng theo dõi (job vẫn chạy nền)
