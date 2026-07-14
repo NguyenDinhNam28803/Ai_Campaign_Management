@@ -6,6 +6,12 @@
       "sourceType": "github",
       "skillPath": "skills/html-diagram/SKILL.md",
       "computedHash": "261b76826209f5e46882dd9c1c53fc1a2deb8ec9be736a2c96299706d2f89877"
+    },
+    "html-plan": {
+      "source": "plannotator/effective-html",
+      "sourceType": "github",
+      "skillPath": "skills/html-plan/SKILL.md",
+      "computedHash": "bbdf82245d977ea70817af4b9a9d041a6f7614d19d4ec43d3554903b9d5fc240"
     }
   }
 }
