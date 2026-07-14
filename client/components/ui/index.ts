@@ -13,5 +13,6 @@ export {
 export { PageHeader } from "./page-header";
 export { Icon, type IconName } from "./icon";
 export { Table, Th, Td } from "./table";
+export { TableRowLink } from "./table-row-link";
 export { StatCard } from "./stat-card";
 export { Ring } from "./ring";

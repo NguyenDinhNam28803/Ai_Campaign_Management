@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useApi } from "@/lib/use-api";
 import { useMutation } from "@/lib/use-mutation";
@@ -21,6 +20,7 @@ import {
   PageHeader,
   Select,
   Table,
+  TableRowLink,
   Td,
   Textarea,
   Th,
@@ -29,7 +29,6 @@ import {
 const TYPES: ContentType[] = ["BLOG", "SOCIAL", "EMAIL", "LANDING"];
 
 export default function ContentListPage() {
-  const router = useRouter();
   const campaigns = useApi<Campaign[]>(() => resources.campaigns.list(), "campaigns");
   const [filter, setFilter] = useState("");
   const { data, loading, error, reload } = useApi<ContentPiece[]>(
@@ -167,20 +166,7 @@ export default function ContentListPage() {
           }
         >
           {data.map((p) => (
-            <tr
-              key={p.id}
-              tabIndex={0}
-              role="link"
-              aria-label={`Mở bài ${p.title}`}
-              onClick={() => router.push(`/content/${p.id}`)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  router.push(`/content/${p.id}`);
-                }
-              }}
-              className="cursor-pointer transition-colors hover:bg-paper focus-visible:bg-paper"
-            >
+            <TableRowLink key={p.id} href={`/content/${p.id}`} label={`Mở bài ${p.title}`}>
               <Td className="font-medium text-ink">{p.title}</Td>
               <Td className="text-muted">{campaignName(p.campaignId)}</Td>
               <Td>
@@ -192,7 +178,7 @@ export default function ContentListPage() {
               <Td className="text-right text-xs text-muted">
                 {new Date(p.updatedAt).toLocaleDateString("vi-VN")}
               </Td>
-            </tr>
+            </TableRowLink>
           ))}
         </Table>
       )}
