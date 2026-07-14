@@ -7,6 +7,7 @@ import { useApi } from "@/lib/use-api";
 import { useMutation } from "@/lib/use-mutation";
 import { resources } from "@/lib/resources";
 import type { Campaign, ContentPiece, ContentType } from "@/lib/types";
+import { CONTENT_TYPE_LABEL } from "@/lib/labels";
 import { ContentStatusBadge } from "@/components/status";
 import {
   Badge,
@@ -183,7 +184,7 @@ export default function ContentListPage() {
               <Td className="font-medium text-ink">{p.title}</Td>
               <Td className="text-muted">{campaignName(p.campaignId)}</Td>
               <Td>
-                <Badge>{p.contentType}</Badge>
+                <Badge>{CONTENT_TYPE_LABEL[p.contentType]}</Badge>
               </Td>
               <Td>
                 <ContentStatusBadge status={p.status} />

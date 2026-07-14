@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useApi } from "@/lib/use-api";
 import { resources } from "@/lib/resources";
 import type { Campaign, ContentPiece } from "@/lib/types";
-import { Badge, Card, EmptyState, ErrorState, ListSkeleton, PageHeader } from "@/components/ui";
+import { CONTENT_TYPE_LABEL } from "@/lib/labels";
+import { ContentStatusBadge } from "@/components/status";
+import { Card, EmptyState, ErrorState, ListSkeleton, PageHeader } from "@/components/ui";
 
 export default function ReviewQueuePage() {
   const { data, loading, error, reload } = useApi<ContentPiece[]>(
@@ -39,7 +41,7 @@ export default function ReviewQueuePage() {
                 <div className="min-w-0">
                   <div className="truncate font-medium">{p.title}</div>
                   <div className="mt-0.5 text-xs text-muted">
-                    {campaignName(p.campaignId)} · {p.contentType}
+                    {campaignName(p.campaignId)} · {CONTENT_TYPE_LABEL[p.contentType]}
                   </div>
                   {p.currentVersion && (
                     <p className="mt-1 line-clamp-1 max-w-xl text-xs text-muted/80">
@@ -47,7 +49,7 @@ export default function ReviewQueuePage() {
                     </p>
                   )}
                 </div>
-                <Badge tone="amber">Chờ duyệt</Badge>
+                <ContentStatusBadge status={p.status} />
               </Card>
             </Link>
           ))}

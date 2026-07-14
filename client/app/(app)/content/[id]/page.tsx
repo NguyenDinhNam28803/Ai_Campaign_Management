@@ -9,6 +9,7 @@ import { useGenerationPolling } from "@/lib/use-generation-polling";
 import { resources } from "@/lib/resources";
 import { isManager } from "@/lib/rbac";
 import type { ContentPiece, ContentVersion, VersionSource } from "@/lib/types";
+import { CONTENT_TYPE_LABEL, VERSION_SOURCE_LABEL } from "@/lib/labels";
 import { ContentStatusBadge, JobStatusBadge } from "@/components/status";
 import { DetailHeader } from "@/components/layout/detail-header";
 import { Badge, Button, Card, ErrorState, Field, ListSkeleton, Textarea } from "@/components/ui";
@@ -61,7 +62,7 @@ export default function ContentDetailPage() {
         backHref="/content"
         backLabel="Nội dung"
         title={p.title}
-        subtitle={p.contentType}
+        subtitle={CONTENT_TYPE_LABEL[p.contentType]}
         right={<ContentStatusBadge status={p.status} />}
       />
 
@@ -75,7 +76,7 @@ export default function ContentDetailPage() {
               </span>
               {p.currentVersion && (
                 <Badge tone={SOURCE_TONE[p.currentVersion.source]}>
-                  v{p.currentVersion.versionNumber} · {p.currentVersion.source}
+                  v{p.currentVersion.versionNumber} · {VERSION_SOURCE_LABEL[p.currentVersion.source]}
                 </Badge>
               )}
             </div>
@@ -111,7 +112,7 @@ export default function ContentDetailPage() {
                 <div key={v.id} className="flex items-center justify-between py-2">
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-xs text-muted">v{v.versionNumber}</span>
-                    <Badge tone={SOURCE_TONE[v.source]}>{v.source}</Badge>
+                    <Badge tone={SOURCE_TONE[v.source]}>{VERSION_SOURCE_LABEL[v.source]}</Badge>
                   </div>
                   <span className="text-xs text-muted">
                     {new Date(v.createdAt).toLocaleString("vi-VN")}
