@@ -1,0 +1,52 @@
+[
+  {
+    "instruction": "Mở rộng đoạn văn sau với chi tiết và ví dụ bổ sung. Giữ đúng giọng văn.",
+    "input": "Marketing nội dung giúp doanh nghiệp thu hút khách hàng.",
+    "output": "Marketing nội dung giúp doanh nghiệp thu hút khách hàng bằng cách tạo ra các bài viết blog, video hướng dẫn, hoặc infographic mang giá trị thực tế. Ví dụ, một công ty SaaS có thể viết bài blog hướng dẫn '10 cách tối ưu quy trình làm việc' — khách hàng tìm thấy bài viết qua Google, thấy hữu ích và bắt đầu tin tưởng thương hiệu. Theo HubSpot, doanh nghiệp blog đều đặn nhận 67% lượng lead nhiều hơn so với không blog."
+  },
+  {
+    "instruction": "Mở rộng đoạn văn sau với chi tiết và ví dụ bổ sung. Giữ đúng giọng văn.",
+    "input": "Email marketing vẫn là kênh hiệu quả nhất hiện nay.",
+    "output": "Email marketing vẫn là kênh hiệu quả nhất hiện nay với ROI trung bình $36 cho mỗi $1 bỏ ra. Lý do là email giúp cá nhân hóa trải nghiệm — ví dụ, thương hiệu gửi email chúc mừng sinh nhật khách hàng kèm mã giảm giá 20% thường có tỷ lệ mở lên đến 45%. Các chiến lược email hiệu quả bao gồm: phân khúc danh sách theo hành vi mua hàng, A/B test tiêu đề, và gửi email vào lúc 10h sáng thứ Ba — thời điểm có tỷ lệ mở cao nhất."
+  },
+  {
+    "instruction": "Mở rộng đoạn văn sau với chi tiết và ví dụ bổ sung. Giữ đúng giọng văn.",
+    "input": "Xây dựng thương hiệu cá nhân trên mạng xã hội rất quan trọng.",
+    "output": "Xây dựng thương hiệu cá nhân trên mạng xã hội rất quan trọng vì 82% người tiêu dùng tin tưởng thương hiệu mà họ theo dõi trên mạng xã hội hơn quảng cáo truyền thống. Để xây dựng thương hiệu cá nhân hiệu quả, bạn nên: (1) Chia sẻ kiến thức chuyên môn qua bài viết LinkedIn mỗi tuần 2-3 lần; (2) Đăng Behind-the-scenes trên Instagram Stories để tạo sự thân thiện; (3) Trả lời bình luận trong vòng 1 giờ để tăng tương tác. Ví dụ, CEO của HubSpot — Brian Halligan — biến LinkedIn thành kênh chính, giúp công ty tiết kiệm hàng triệu đô chi phí marketing."
+  },
+  {
+    "instruction": "Mở rộng đoạn văn sau với chi tiết và ví dụ bổ sung. Giữ đúng giọng văn.",
+    "input": "SEO giúp website của bạn được tìm thấy trên Google.",
+    "output": "SEO giúp website của bạn được tìm thấy trên Google — nơi 68% trải nghiệm trực tuyến bắt đầu bằng một tìm kiếm. Cụ thể, trang đầu tiên của Google chiếm 71% tổng số nhấp chuột, trong khi trang hai chỉ nhận chưa đến 6%. Để tối ưu SEO, bạn cần tập trung vào: từ khóa长尾 (ví dụ: 'cách viết blog chuẩn SEO 2026' thay vì chỉ 'blog'), tối ưu Core Web Vitals, và xây dựng backlink chất lượng. Một blog du lịch đã tăng traffic 300% sau 6 tháng chỉ bằng cách cập nhật 20 bài viết cũ và thêm schema markup."
+  },
+  {
+    "instruction": "Mở rộng đoạn văn sau với chi tiết và ví dụ bổ sung. Giữ đúng giọng văn.",
+    "input": "TikTok đang trở thành nền tảng marketing hiệu quả cho Gen Z.",
+    "output": "TikTok đang trở thành nền tảng marketing hiệu quả cho Gen Z với hơn 1 tỷ người dùng hoạt động hàng tháng và thời gian sử dụng trung bình 95 phút/ngày. Điểm mạnh của TikTok là thuật toán discover — video mới có thể viral mà không cần follower. Thương hiệu có thể tận dụng: (1) TikTok Shop để bán hàng trực tiếp; (2) Challenges hashtag để tăng tương tác; (3) Collaborate với creator niche. Ví dụ, cửa hàng quần áo nhỏ '@shopviet' bán được 500 sản phẩm chỉ sau một video review 15 giây viral với 2 triệu lượt xem."
+  },
+  {
+    "instruction": "Mở rộng đoạn văn sau với chi tiết và ví dụ bổ sung. Giữ đúng giọng văn.",
+    "input": "Chatbot AI giúp giảm chi phí dịch vụ khách hàng.",
+    "output": "Chatbot AI giúp giảm chi phí dịch vụ khách hàng — theo IBM, chatbot tiết kiệm trung bình $5.50 cho mỗi tương tác so với nhân viên hỗ trợ. Chatbot có thể xử lý 80% câu hỏi thường gặp như: trạng thái đơn hàng, chính sách đổi trả, hoặc thông tin sản phẩm. Ví dụ, Shopify ghi nhận商家 sử dụng chatbot giảm 70% thời gian phản hồi và tăng 35% tỷ lệ chuyển đổi. Tuy nhiên, chatbot nên được kết hợp với nhân viên thật — khi vấn đề phức tạp, chuyển sang live agent để đảm bảo trải nghiệm khách hàng."
+  },
+  {
+    "instruction": "Mở rộng đoạn văn sau với chi tiết và ví dụ bổ sung. Giữ đúng giọng văn.",
+    "input": "User-generated content là nguồn lực marketing miễn phí và hiệu quả.",
+    "output": "User-generated content (UGC) là nguồn lực marketing miễn phí và hiệu quả — người tiêu dùng tin tưởng UGC gấp 2.4 lần so với nội dung thương hiệu tạo. Ví dụ: Starbucks dùng hashtag #RedCupContest mỗi mùa Giáng sinh, khách hàng tự đăng ảnh cup redesign — chiến dịch thu hút hơn 30,000 bài đăng chỉ trong 1 tuần, tương đương hàng triệu dollar giá trị advertising miễn phí. Để khuyến khích UGC: (1) Tạo hashtag thương hiệu; (2) Tổ chức cuộc thi với giải thưởng; (3) Repost nội dung khách hàng với credit."
+  },
+  {
+    "instruction": "Mở rộng đoạn văn sau với chi tiết và ví dụ bổ sung. Giữ đúng giọng văn.",
+    "input": "Data analytics giúp đưa ra quyết định kinh doanh chính xác hơn.",
+    "output": "Data analytics giúp đưa ra quyết định kinh doanh chính xác hơn — thay vì dùng intuition, doanh nghiệp có thể dựa trên dữ liệu thực tế. Ví dụ, Google Analytics 4 cho thấy kênh nào mang lại nhiều chuyển đổi nhất; Mixpanel theo dõi hành vi người dùng trong app. Theo McKinsey, doanh nghiệp data-driven tăng trưởng lợi nhuận 23% so với đối thủ. Một cửa hàng TMĐT phát hiện 70% doanh thu đến từ 20% sản phẩm — tập trung nguồn lực vào nhóm sản phẩm hot đã tăng revenue 40% trong 3 tháng."
+  },
+  {
+    "instruction": "Mở rộng đoạn văn sau với chi tiết và ví dụ bổ sung. Giữ đúng giọng văn.",
+    "input": "A/B testing là phương pháp tối ưu hiệu quả cho website.",
+    "output": "A/B testing là phương pháp tối ưu hiệu quả cho website bằng cách so sánh hai phiên bản để xem phiên bản nào hoạt động tốt hơn. Ví dụ: button màu xanh so với đỏ — thường button đỏ có tỷ lệ nhấp cao hơn 21%. Các yếu tố nên A/B test: (1) Tiêu đề trang — thay đổi tiêu đề có thể tăng 36% thời gian trên trang; (2) vị trí CTA — đặt CTA ở fold trên thường tăng conversion 20%; (3) hình ảnh sản phẩm — ảnh lifestyle thường tốt hơn ảnh trắng đơn thuần. Shopify ghi nhận商家 thực hiện A/B test thường xuyên tăng 30% doanh thu so với商家 không test."
+  },
+  {
+    "instruction": "Mở rộng đoạn văn sau với chi tiết và ví dụ bổ sung. Giữ đúng giọng văn.",
+    "input": "Podcast đang trở thành kênh tiếp cận khách hàng tiềm năng.",
+    "output": "Podcast đang trở thành kênh tiếp cận khách hàng tiềm năng với hơn 500 triệu người nghe toàn cầu và tăng trưởng 25% mỗi năm. Điểm mạnh của podcast là sự gắn kết — người nghe dành trung bình 30 phút mỗi tập, gấp 5 lần so với đọc blog. Doanh nghiệp có thể: (1) Tạo podcast chia sẻ chuyên môn (ví dụ: ngân hàng fintech podcast về tài chính cá nhân); (2) Sponsor podcast nổi tiếng trong ngành; (3) Chuyển podcast thành blog post + video để repurpose nội dung. Ví dụ, Shopify Podcast thu hút 100K lượt tải mỗi tháng, giúp商家 mới hiểu rõ hơn về bán hàng online."
+  }
+]

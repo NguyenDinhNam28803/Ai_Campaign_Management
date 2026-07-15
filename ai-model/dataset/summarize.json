@@ -1,0 +1,52 @@
+[
+  {
+    "instruction": "Tóm tắt đoạn văn sau thành 2-3 câu ngắn gọn, giữ ý chính.",
+    "input": "Trong bối cảnh chuyển đổi số diễn ra mạnh mẽ như hiện nay, các doanh nghiệp Việt Nam đang đối mặt với nhiều thách thức trong việc thích ứng với công nghệ mới. Theo báo cáo của Cisco năm 2025, có đến 67% doanh nghiệp vừa và nhỏ tại Việt Nam chưa áp dụng đầy đủ các giải pháp số hóa trong quy trình kinh doanh. Điều này dẫn đến việc nhiều doanh nghiệp bị tụt hậu so với đối thủ cạnh tranh quốc tế. Ngoài ra, vấn đề thiếu hụt nhân lực có kỹ năng số cũng là rào cản lớn, với khoảng 40% doanh nghiệp báo cáo khó tìm được nhân viên phù hợp cho các vị trí liên quan đến công nghệ.",
+    "output": "67% doanh nghiệp vừa và nhỏ Việt Nam chưa số hóa đầy đủ theo báo cáo Cisco 2025. Vấn đề chính là thiếu hụt nhân lực kỹ năng số — 40% doanh nghiệp khó tuyển vị trí liên quan đến công nghệ."
+  },
+  {
+    "instruction": "Tóm tắt đoạn văn sau thành 2-3 câu ngắn gọn, giữ ý chính.",
+    "input": "Nội dung marketing không còn đơn giản là viết bài đăng lên mạng xã hội. Theo Content Marketing Institute, 73% doanh nghiệp B2B đang đầu tư nhiều hơn vào nội dung so với năm trước. Lý do là vì người tiêu dùng ngày càng thông minh — họ muốn nội dung mang lại giá trị thực sự, không chỉ là quảng cáo. Các thương hiệu thành công như HubSpot, Buffer, hay Moz đều xây dựng chiến lược nội dung dài hạn với sự kết hợp giữa blog, video, podcast, và email newsletter. Điều quan trọng nhất là phải hiểu đối tượng mục tiêu và tạo nội dung giải quyết vấn đề thực tế của họ.",
+    "output": "73% doanh nghiệp B2B tăng ngân sách nội dung vì người tiêu dùng đòi hỏi giá trị thực. Chiến lược hiệu quả kết hợp blog, video, podcast tập trung vào giải quyết vấn đề khách hàng."
+  },
+  {
+    "instruction": "Tóm tắt đoạn văn sau thành 2-3 câu ngắn gọn, giữ ý chính.",
+    "input": "Xu hướng thương mại điện tử Việt Nam tiếp tục tăng trưởng mạnh trong 2026. Theo Statista, doanh thu TMĐT dự kiến đạt 24 tỷ USD, tăng 25% so với 2025. Mobile commerce chiếm 72% tổng giao dịch, cho thấy người tiêu dùng Việt ưu tiên mua sắm trên điện thoại. Các sàn Shopee, Lazada, và TikTok Shop vẫn dẫn đầu thị trường, nhưng website TMĐT riêng (D2C) cũng đang tăng trưởng nhanh khi thương hiệu muốn kiểm soát trải nghiệm khách hàng tốt hơn.",
+    "output": "Doanh thu TMĐT Việt Nam 2026 dự kiến 24 tỷ USD, tăng 25%. Mobile commerce chiếm 72% — Shopee, Lazada, TikTok Shop dẫn đầu nhưng D2C đang tăng trưởng nhanh."
+  },
+  {
+    "instruction": "Tóm tắt đoạn văn sau thành 2-3 câu ngắn gọn, giữ ý chính.",
+    "input": "Công nghệ AI đang thay đổi cách thức tạo nội dung trong ngành marketing. Từ việc sử dụng ChatGPT để viết bản nháp, đến DALL-E tạo hình ảnh, và giờ là video AI — doanh nghiệp có thể sản xuất nội dung với tốc độ chưa từng có. Tuy nhiên, các chuyên gia cảnh báo rằng nội dung 100% do AI tạo ra thiếu sự chân thật và có thể gây mất niềm tin với khách hàng. Giải pháp tốt nhất là kết hợp giữa AI và con người — AI hỗ trợ nghiên cứu, brainstorm, và viết nháp, còn con người chỉnh sửa, thêm cá tính và đảm bảo nội dung phù hợp với thương hiệu.",
+    "output": "AI thay đổi marketing nội dung với khả năng tạo text, hình ảnh, video siêu nhanh. Giải pháp hiệu quả nhất là kết hợp AI (nghiên cứu, nháp) và con người (chỉnh sửa, cá tính thương hiệu)."
+  },
+  {
+    "instruction": "Tóm tắt đoạn văn sau thành 2-3 câu ngắn gọn, giữ ý chính.",
+    "input": "Livestream shopping đang trở thành xu hướng bán hàng mới tại Việt Nam, đặc biệt trên nền tảng TikTok và Facebook. Theo một khảo sát của Kantar, 56% người tiêu dùng Việt Nam đã mua hàng qua livestream trong 12 tháng qua. Lý do là vì livestream tạo trải nghiệm tương tác trực tiếp — người xem có thể hỏi đáp实时 với người bán, xem sản phẩm thực tế, và nhận ưu đãi độc quyền. Tuy nhiên, thách thức lớn nhất là duy trì chất lượng livestream và quản lý kho hàng realtime. Các thương hiệu thành công thường có đội ngũ livestream chuyên nghiệp với kịch bản rõ ràng và phần thưởng giữ chân người xem.",
+    "output": "56% người tiêu dùng VN đã mua hàng qua livestream trong 12 tháng qua. Livestream hiệu quả nhờ tương tác trực tiếp nhưng cần đội ngũ chuyên nghiệp và kịch bản rõ ràng."
+  },
+  {
+    "instruction": "Tóm tắt đoạn văn sau thành 2-3 câu ngắn gọn, giữ ý chính.",
+    "input": "Bảo mật dữ liệu và quyền riêng tư ngày càng trở thành mối quan tâm lớn của người tiêu dùng. GDPR của EU và Nghị định 13/2023 về bảo vệ dữ liệu cá nhân của Việt Nam đặt ra yêu cầu nghiêm ngặt với doanh nghiệp. Hậu quả của vi phạm rất nặng nề — Marriott phải nộp phạt 120 triệu USD vì rò rỉ dữ liệu 500 triệu khách hàng. Doanh nghiệp cần xây dựng chính sách bảo mật minh bạch, yêu cầu consent rõ ràng trước khi thu thập dữ liệu, và đào tạo nhân viên về an toàn thông tin.",
+    "output": "GDPR và Nghị định 13/2023 đặt yêu cầu nghiêm ngặt về bảo mật dữ liệu. Vi phạm có thể phạt hàng trăm triệu USD — doanh nghiệp cần minh bạch chính sách và đào tạo nhân viên."
+  },
+  {
+    "instruction": "Tóm tắt đoạn văn sau thành 2-3 câu ngắn gọn, giữ ý chính.",
+    "input": "Remote work (làm việc từ xa) đã trở thành bình thường mới sau đại dịch. Theo Owl Labs, 70% nhân viên toàn cầu làm việc từ xa ít nhất một ngày mỗi tuần. Doanh nghiệp hưởng lợi từ giảm chi phí văn phòng (tiết kiệm trung bình $11,000/nhân viên), tiếp cận được nhân tài toàn cầu, và tăng năng suất. Tuy nhiên, thách thức bao gồm duy trì văn hóa doanh nghiệp, quản lý hiệu suất, và tránh burnout cho nhân viên. Giải pháp là kết hợp hybrid — 2-3 ngày tại văn phòng để teamwork, còn lại làm từ xa.",
+    "output": "70% nhân viên toàn cầu làm việc từ xa ít nhất 1 ngày/tuần. Remote work tiết kiệm $11,000/nhân viên nhưng thách thức là văn hóa và burnout — hybrid 2-3 ngày văn phòng là giải pháp."
+  },
+  {
+    "instruction": "Tóm tắt đoạn văn sau thành 2-3 câu ngắn gọn, giữ ý chính.",
+    "input": "Thị trường smartphone Việt Nam tiếp tục sôi động với sự cạnh tranh giữa các thương hiệu lớn. Samsung vẫn dẫn đầu thị phần với 34%, theo sau là OPPO (22%), Xiaomi (18%), và Apple (15%). Điểm đáng chú ý là phân khúc điện thoại giá rẻ dưới 5 triệu đồng chiếm 45% tổng doanh số, cho thấy người tiêu dùng Việt vẫn nhạy cảm về giá. Tuy nhiên, phân khúc cao cấp (trên 20 triệu đồng) đang tăng trưởng 30% mỗi năm, đặc biệt tại các thành phố lớn. Xu hướng 2026 là AI tích hợp sẵn trên điện thoại — các tính năng như chụp ảnh AI, dịch realtime, và trợ lý ảo thông minh đang trở thành yếu tố quyết định khi mua điện thoại.",
+    "output": "Samsung dẫn đầu thị phần smartphone VN (34%), phân khúc giá rẻ chiếm 45% doanh số nhưng cao cấp tăng trưởng 30%/năm. AI tích hợp sẵn là xu hướng 2026."
+  },
+  {
+    "instruction": "Tóm tắt đoạn văn sau thành 2-3 câu ngắn gọn, giữ ý chính.",
+    "input": "Green marketing (marketing xanh) không còn là xu hướng mà là yêu cầu bắt buộc. 73% thế hệ Millennial và Gen Z sẵn sàng trả thêm tiền cho sản phẩm bền vững theo Nielsen. Các thương hiệu lớn như Unilever, Patagonia, và IKEA đã cam kết giảm phát thải carbon về 0. Tại Việt Nam, Vinamilk vừa công bố bao bì 100% recyclable, và PNJ sử dụng vàng tái chế. Tuy nhiên, greenwashing (tự nhận xanh nhưng không có hành động thực) đang gây mất niềm tin — 68% người tiêu dùng cho rằng nhiều thương hiệu đang 'giả vờ' xanh.",
+    "output": "73% Gen Z/Millennial sẵn sàng trả thêm cho sản phẩm bền vững. Các thương hiệu lớn đang cam kết xanh nhưng greenwashing vẫn là vấn đề — 68% người tiêu dùng hoài nghi."
+  },
+  {
+    "instruction": "Tóm tắt đoạn văn sau thành 2-3 câu ngắn gọn, giữ ý chính.",
+    "input": "Omnichannel retail (bán lẻ đa kênh) là chiến lược quan trọng nhất trong 2026. Khách hàng mong đợi trải nghiệm liền mạch giữa online và offline — nghiên cứu Harvard cho thấy khách hàng omnichannel chi tiêu trung bình 4% nhiều hơn tại cửa hàng và 10% nhiều hơn online so với single-channel. Ví dụ, Nike cho phép khách hàng đặt online, thử tại cửa hàng, và đổi trả tại bất kỳ chi nhánh nào. Uniqlo sử dụng 'smart mirror' trong fitting room để khách hàng xem đánh giá online. Tại Việt Nam, Thế Giới Di Động đang triển khai click-and-collect và ship từ cửa hàng gần nhất — giảm thời gian giao hàng từ 2 ngày xuống 2 giờ.",
+    "output": "Khách hàng omnichannel chi tiêu nhiều hơn 4-10% so với single-channel. Nike, Uniqlo, Thế Giới Di Động là ví dụ thành công — trải nghiệm liền mạch online-offline là yếu tố cạnh tranh."
+  }
+]

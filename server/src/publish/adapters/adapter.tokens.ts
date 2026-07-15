@@ -1,0 +1,2 @@
+export const WORDPRESS_ADAPTER = 'WORDPRESS_ADAPTER';
+export const STUB_ADAPTER = 'STUB_ADAPTER';

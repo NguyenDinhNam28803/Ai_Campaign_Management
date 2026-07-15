@@ -2,12 +2,21 @@
 import { api } from "./api";
 import type {
   AIGeneration,
+  AnalyticsAiCost,
+  AnalyticsChannelBreakdown,
+  AnalyticsContentPerformance,
+  AnalyticsOverview,
+  AnalyticsTimelineEntry,
   Campaign,
+  Channel,
+  ChannelType,
   ContentPiece,
   ContentVersion,
   KnowledgeSource,
+  MetricSnapshot,
   Organization,
   ProductLine,
+  Publication,
   Role,
   User,
 } from "./types";
@@ -71,5 +80,73 @@ export const resources = {
   knowledge: {
     list: (productLineId?: string) => api<KnowledgeSource[]>(`/knowledge${qs({ productLineId })}`),
     get: (id: string) => api<KnowledgeSource>(`/knowledge/${id}`),
+  },
+
+  channels: {
+    list: (productLineId?: string) =>
+      api<Channel[]>(`/channels${qs({ productLineId })}`),
+    get: (id: string) => api<Channel>(`/channels/${id}`),
+    create: (body: {
+      productLineId: string;
+      type: ChannelType;
+      name: string;
+      config: Record<string, unknown>;
+      credentials: string;
+    }) => api<Channel>("/channels", { method: "POST", body }),
+    update: (
+      id: string,
+      body: Partial<{ name: string; config: Record<string, unknown>; credentials: string }>,
+    ) => api<Channel>(`/channels/${id}`, { method: "PATCH", body }),
+    remove: (id: string) => api(`/channels/${id}`, { method: "DELETE" }),
+  },
+
+  publications: {
+    list: (params: {
+      pieceId?: string;
+      channelId?: string;
+      status?: string;
+    } = {}) => api<Publication[]>(`/publications${qs(params)}`),
+    get: (id: string) => api<Publication>(`/publications/${id}`),
+    create: (body: {
+      pieceId: string;
+      channelId: string;
+      scheduledAt?: string;
+    }) => api<Publication>("/publications", { method: "POST", body }),
+    publish: (id: string) =>
+      api(`/publications/${id}/publish`, { method: "POST" }),
+    schedule: (id: string, scheduledAt: string) =>
+      api(`/publications/${id}/schedule`, {
+        method: "PATCH",
+        body: { scheduledAt },
+      }),
+  },
+
+  analytics: {
+    import: (body: {
+      source: string;
+      rows: Array<{
+        publicationId: string;
+        pageviews?: number;
+        uniqueVisitors?: number;
+        engagements?: number;
+        conversions?: number;
+        capturedAt: string;
+      }>;
+    }) => api<{ imported: number; skipped: number }>("/analytics/import", { method: "POST", body }),
+
+    overview: (productLineId: string, from?: string, to?: string) =>
+      api<AnalyticsOverview>(`/analytics/overview${qs({ productLineId, from, to })}`),
+
+    timeline: (productLineId: string, period?: string, from?: string, to?: string) =>
+      api<AnalyticsTimelineEntry[]>(`/analytics/timeline${qs({ productLineId, period, from, to })}`),
+
+    channels: (productLineId: string, from?: string, to?: string) =>
+      api<AnalyticsChannelBreakdown[]>(`/analytics/channels${qs({ productLineId, from, to })}`),
+
+    content: (productLineId: string, from?: string, to?: string) =>
+      api<AnalyticsContentPerformance[]>(`/analytics/content${qs({ productLineId, from, to })}`),
+
+    aiCost: (productLineId?: string, from?: string, to?: string) =>
+      api<AnalyticsAiCost>(`/analytics/ai-cost${qs({ productLineId, from, to })}`),
   },
 };

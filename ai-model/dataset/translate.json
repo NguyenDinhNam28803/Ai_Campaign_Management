@@ -1,0 +1,77 @@
+[
+  {
+    "instruction": "Dịch đoạn văn sau sang tiếng Anh.",
+    "input": "Nội dung marketing chất lượng giúp doanh nghiệp xây dựng lòng tin với khách hàng và tăng tỷ lệ chuyển đổi.",
+    "output": "Quality marketing content helps businesses build trust with customers and increase conversion rates."
+  },
+  {
+    "instruction": "Dịch đoạn văn sau sang tiếng Việt.",
+    "input": "Social media engagement has increased by 45% in the past year, with video content driving the most interaction across all platforms.",
+    "output": "Tương tác mạng xã hội tăng 45% trong năm qua, với nội dung video thúc đẩy nhiều tương tác nhất trên mọi nền tảng."
+  },
+  {
+    "instruction": "Dịch đoạn văn sau sang tiếng Anh.",
+    "input": "Chuyển đổi số là quá trình tích hợp công nghệ số vào tất cả các lĩnh vực của doanh nghiệp, thay đổi cách thức hoạt động và tạo ra giá trị mới.",
+    "output": "Digital transformation is the process of integrating digital technology into all areas of a business, changing how it operates and creating new value."
+  },
+  {
+    "instruction": "Dịch đoạn văn sau sang tiếng Việt.",
+    "input": "Personalized email campaigns generate 6x higher transaction rates than generic messages, making segmentation crucial for effective marketing.",
+    "output": "Chiến dịch email cá nhân hóa tạo ra tỷ lệ giao dịch cao gấp 6 lần so với tin nhắn chung, khiến phân khúc đối tượng trở nên then chốt cho marketing hiệu quả."
+  },
+  {
+    "instruction": "Dịch đoạn văn sau sang tiếng Anh.",
+    "input": "Việt Nam đang trở thành một trong những thị trường TMĐT năng động nhất Đông Nam Á với tốc độ tăng trưởng hai con số mỗi năm.",
+    "output": "Vietnam is becoming one of the most dynamic e-commerce markets in Southeast Asia with double-digit growth rates annually."
+  },
+  {
+    "instruction": "Dịch đoạn văn sau sang tiếng Việt.",
+    "input": "The future of work is hybrid — combining the flexibility of remote work with the collaboration benefits of in-office presence.",
+    "output": "Tương lai của công việc là hybrid — kết hợp sự linh hoạt của làm việc từ xa với lợi ích hợp tác của hiện diện tại văn phòng."
+  },
+  {
+    "instruction": "Dịch đoạn văn sau sang tiếng Anh.",
+    "input": "Trí tuệ nhân tạo đang thay đổi ngành marketing bằng cách tự động hóa quy trình, cá nhân hóa trải nghiệm khách hàng và phân tích dữ liệu hiệu quả hơn.",
+    "output": "Artificial intelligence is transforming the marketing industry by automating processes, personalizing customer experiences, and analyzing data more effectively."
+  },
+  {
+    "instruction": "Dịch đoạn văn sau sang tiếng Việt.",
+    "input": "Content repurposing allows businesses to maximize their ROI by adapting one piece of content into multiple formats — blog posts, social media updates, videos, and podcasts.",
+    "output": "Tái sử dụng nội dung cho phép doanh nghiệp tối đa hóa ROI bằng cách chuyển đổi một nội dung thành nhiều định dạng — bài blog, cập nhật mạng xã hội, video, và podcast."
+  },
+  {
+    "instruction": "Dịch đoạn văn sau sang tiếng Anh.",
+    "input": "Xu hướng tiêu dùng Việt Nam đang thay đổi nhanh chóng với sự phổ biến của ví điện tử và thanh toán không tiền mặt.",
+    "output": "Vietnamese consumer trends are rapidly changing with the widespread adoption of digital wallets and cashless payments."
+  },
+  {
+    "instruction": "Dịch đoạn văn sau sang tiếng Việt.",
+    "input": "Sustainable business practices are no longer optional — consumers demand transparency and environmental responsibility from the brands they support.",
+    "output": "Các thực hành kinh doanh bền vững không còn là tùy chọn — người tiêu dùng đòi hỏi sự minh bạch và trách nhiệm môi trường từ các thương hiệu mà họ ủng hộ."
+  },
+  {
+    "instruction": "Dịch đoạn văn sau sang tiếng Anh.",
+    "input": "Việc đầu tư vào phát triển nhân sự không chỉ giúp doanh nghiệp giữ chân nhân tài mà còn nâng cao năng lực cạnh tranh trên thị trường.",
+    "output": "Investing in talent development not only helps businesses retain talent but also enhances competitiveness in the market."
+  },
+  {
+    "instruction": "Dịch đoạn văn sau sang tiếng Việt.",
+    "input": "Video marketing generates 1200% more shares than text and images combined, making it the most powerful content format for brand awareness.",
+    "output": "Video marketing tạo ra lượng chia sẻ gấp 1200 lần so với văn bản và hình ảnh kết hợp, khiến nó trở thành định dạng nội dung mạnh mẽ nhất cho nhận diện thương hiệu."
+  },
+  {
+    "instruction": "Dịch đoạn văn sau sang tiếng Anh.",
+    "input": "Khách hàng ngày càng thông minh và kỹ tính hơn trong việc lựa chọn sản phẩm, họ thường research kỹ trên internet trước khi đưa ra quyết định mua hàng.",
+    "output": "Customers are increasingly smart and selective in choosing products — they typically research thoroughly online before making a purchase decision."
+  },
+  {
+    "instruction": "Dịch đoạn văn sau sang tiếng Việt.",
+    "input": "Local SEO is critical for small businesses — 46% of all Google searches have local intent, and 76% of people who search for something nearby visit a business within 24 hours.",
+    "output": "SEO địa phương rất quan trọng cho doanh nghiệp nhỏ — 46% tìm kiếm Google có ý định địa phương, và 76% người tìm kiếm thứ gì đó gần đó ghé thăm doanh nghiệp trong vòng 24 giờ."
+  },
+  {
+    "instruction": "Dịch đoạn văn sau sang tiếng Anh.",
+    "input": "Sự cạnh tranh ngày càng gay gắt trong ngành F&B đòi hỏi các thương hiệu phải không ngừng đổi mới trong cả sản phẩm lẫn trải nghiệm khách hàng.",
+    "output": "Increasingly fierce competition in the F&B industry requires brands to continuously innovate in both products and customer experience."
+  }
+]

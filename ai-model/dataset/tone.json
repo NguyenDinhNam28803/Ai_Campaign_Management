@@ -1,0 +1,52 @@
+[
+  {
+    "instruction": "Viết lại đoạn văn sau với giọng chuyên nghiệp, trang trọng hơn nhưng vẫn thân thiện.",
+    "input": "Hey mọi người, sản phẩm mới của tụi mình vừa ra mắt rồi nha! Check ngay kẻo lỡ, đảm bảo cool ngầu luôn á!",
+    "output": "Chúng tôi vui mừng thông báo ra mắt sản phẩm mới. Mời quý khách khám phá và trải nghiệm những tính năng vượt trội mà chúng tôi đã nghiên cứu phát triển."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau với giọng chuyên nghiệp, trang trọng hơn nhưng vẫn thân thiện.",
+    "input": "Báo cáo doanh số quý này đỉnh quá trời, tăng vù vù luôn, team làm tốt lắm!",
+    "output": "Báo cáo tài chính quý này cho thấy kết quả ấn tượng với mức tăng trưởng đáng kể. Xin ghi nhận nỗ lực của toàn thể đội ngũ."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau với giọng chuyên nghiệp, trang trọng hơn nhưng vẫn thân thiện.",
+    "input": "Khách hàng feedback sản phẩm bị lỗi, cần fix gấp không là mất khách mất!",
+    "output": "Chúng tôi đã nhận được phản hồi từ khách hàng về vấn đề kỹ thuật của sản phẩm. Đội ngũ đang triển khai xử lý khẩn trương để đảm bảo quyền lợi khách hàng."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau với giọng chuyên nghiệp, trang trọng hơn nhưng vẫn thân thiện.",
+    "input": "Thằng competitor vừa ra feature mới giống hệt mình, phải lên plan đối phó ngay!",
+    "output": "Đối thủ vừa giới thiệu tính năng tương tự sản phẩm của chúng tôi. Đề xuất xây dựng chiến lược phản ứng chiến lược để duy trì vị thế cạnh tranh."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau với giọng chuyên nghiệp, trang trọng hơn nhưng vẫn thân thiện.",
+    "input": "Cuối năm ai cũng bận rùm, deadline dí tới nơi, ai chưa nộp report thì nộp gấp đi nha!",
+    "output": "Cuối năm là giai đoạn khối lượng công việc tăng cao. Kính mong các bộ phận hoàn thiện báo cáo đúng hạn để tổng hợp kế hoạch năm sau."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau với giọng chuyên nghiệp, trang trọng hơn nhưng vẫn thân thiện.",
+    "input": "Mấy bạn SALE ơi, tháng này target cao lắm, cố lên đừng ỉu xìu nha, có thưởng lớn cho ai đạt nha!",
+    "output": "Đội ngũ kinh doanh thân mến, chỉ tiêu tháng này đặt ở mức thách thức. Tuy nhiên, chúng tôi tin tưởng vào năng lực của team và đã chuẩn bị phần thưởng xứng đáng cho những thành viên đạt mục tiêu."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau với giọng chuyên nghiệp, trang trọng hơn nhưng vẫn thân thiện.",
+    "input": "Xin lỗi mọi người nha, hệ thống bị sập từ sáng giờ, IT đang sửa rồi, thông cảm nha!",
+    "output": "Chúng tôi xin lỗi về sự cố hệ thống đang xảy ra. Đội ngũ kỹ thuật đang tích cực khắc phục. Trân trọng cảm ơn sự kiên nhẫn của quý khách."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau với giọng chuyên nghiệp, trang trọng hơn nhưng vẫn thân thiện.",
+    "input": "Hợp đồng mới ký được rồi各位, deal lớn lắm, ăn mừng cái nào!",
+    "output": "Chúng tôi vui mừng thông báo đã hoàn tất ký kết hợp đồng mới — một thỏa thuận quan trọng đánh dấu bước phát triển đáng kể trong hoạt động kinh doanh."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau với giọng chuyên nghiệp, trang trọng hơn nhưng vẫn thân thiện.",
+    "input": "Ê bạn, cái meeting chiều nay dời qua tuần được không, mình bận cái khác à!",
+    "output": "Tôi muốn đề xuất dời cuộc họp dự kiến chiều nay sang tuần sau do lịch trình trùng hợp. Rất mong nhận được sự thông cảm và sắp xếp lại thời gian phù hợp."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau với giọng chuyên nghiệp, trang trọng hơn nhưng vẫn thân thiện.",
+    "input": "Cái app update mới lag quá trời, load mãi không ra, customer kêu gào um sùm!",
+    "output": "Phiên bản cập nhật mới của ứng dụng gặp vấn đề về hiệu suất, gây chậm trễ trong quá trình tải. Khách hàng đang phản ánh và chúng tôi đang ưu tiên xử lý."
+  }
+]

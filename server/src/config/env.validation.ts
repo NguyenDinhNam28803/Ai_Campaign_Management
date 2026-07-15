@@ -61,6 +61,15 @@ export class EnvironmentVariables {
   @IsString()
   @IsOptional()
   OPENAI_MODEL: string = 'gpt-4o-mini';
+
+  // --- Ollama (Self-hosted AI) ---
+  @IsString()
+  @IsOptional()
+  OLLAMA_BASE_URL?: string;
+
+  @IsString()
+  @IsOptional()
+  OLLAMA_MODEL: string = 'ai-content';
 }
 
 export function validate(config: Record<string, unknown>): EnvironmentVariables {

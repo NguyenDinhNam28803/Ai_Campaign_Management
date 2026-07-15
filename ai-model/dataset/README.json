@@ -1,0 +1,6 @@
+{
+  "description": "Dataset cho AI Content Platform — 5 chế độ: rewrite, expand, summarize, translate, tone. Dùng để fine-tune Qwen3-8B / Vistral-7B.",
+  "format": "Alpaca (instruction, input, output)",
+  "total_samples": 500,
+  "created": "2026-07-15"
+}

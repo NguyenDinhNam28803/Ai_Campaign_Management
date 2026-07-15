@@ -5,13 +5,13 @@ import { useEffect, useState } from "react";
 import { useApi } from "@/lib/use-api";
 import { useMutation } from "@/lib/use-mutation";
 import { useAuth } from "@/lib/auth";
-import { useGenerationPolling } from "@/lib/use-generation-polling";
 import { resources } from "@/lib/resources";
 import { isManager } from "@/lib/rbac";
-import type { ContentPiece, ContentVersion, VersionSource } from "@/lib/types";
-import { CONTENT_TYPE_LABEL, VERSION_SOURCE_LABEL } from "@/lib/labels";
-import { ContentStatusBadge, JobStatusBadge } from "@/components/status";
+import type { ContentPiece, ContentVersion, Channel, Publication, VersionSource } from "@/lib/types";
+import { CONTENT_TYPE_LABEL, VERSION_SOURCE_LABEL, CHANNEL_TYPE_LABEL, PUBLISH_STATUS_LABEL } from "@/lib/labels";
+import { ContentStatusBadge } from "@/components/status";
 import { DetailHeader } from "@/components/layout/detail-header";
+import { AssistantPanel } from "@/components/assistant-panel";
 import { Badge, Button, Card, ErrorState, Field, ListSkeleton, Textarea } from "@/components/ui";
 
 const SOURCE_TONE: Record<VersionSource, "neutral" | "accent" | "amber"> = {
@@ -28,11 +28,13 @@ export default function ContentDetailPage() {
 
   const piece = useApi<ContentPiece>(() => resources.content.get(id), `content:${id}`);
   const versions = useApi<ContentVersion[]>(() => resources.content.versions(id), `content:${id}:versions`);
+  const channels = useApi<Channel[]>(() => resources.channels.list(piece.data?.productLineId), `channels:${piece.data?.productLineId}`);
+  const publications = useApi<Publication[]>(() => resources.publications.list({ pieceId: id }), `publications:${id}`);
   const { run, busy } = useMutation();
-  const { gen, generating, start: generate, stop } = useGenerationPolling(id, versions.reload);
 
   const [editBody, setEditBody] = useState("");
   const [comment, setComment] = useState("");
+  const [selectedChannel, setSelectedChannel] = useState("");
 
   useEffect(() => {
     setEditBody(piece.data?.currentVersion?.body ?? "");
@@ -55,6 +57,8 @@ export default function ContentDetailPage() {
   const isDraft = p.status === "DRAFT";
   const isReview = p.status === "IN_REVIEW";
   const isApproved = p.status === "APPROVED";
+  const isScheduled = p.status === "SCHEDULED";
+  const canPublish = (isApproved || isScheduled) && canReview;
 
   return (
     <div className="flex flex-col gap-6">
@@ -193,48 +197,114 @@ export default function ContentDetailPage() {
             )}
           </Card>
 
-          <Card className="flex flex-col gap-3 p-4">
-            <span className="text-[0.72rem] font-medium uppercase tracking-wide text-muted">Trợ lý AI</span>
-            <p className="text-xs text-muted">
-              Sinh một bản nháp AI (AI_DRAFT) từ tiêu đề + nội dung hiện tại. Không đổi trạng thái.
-            </p>
-            <Button variant="primary" loading={generating} onClick={generate}>
-              {generating ? "Đang sinh…" : "Generate AI"}
-            </Button>
-            {generating && (
-              <button
-                onClick={stop}
-                className="text-xs text-muted hover:text-accent"
+          {isDraft && (
+            <AssistantPanel
+              pieceId={id}
+              currentText={editBody}
+              onApply={(newText) => {
+                setEditBody(newText);
+                run(() => resources.content.addVersion(id, newText), {
+                  success: "Đã áp dụng và lưu bản mới",
+                  onSuccess: reloadAll,
+                });
+              }}
+            />
+          )}
+
+          {/* Publish section */}
+          {canPublish && (
+            <Card className="flex flex-col gap-3 p-4">
+              <span className="text-[0.72rem] font-medium uppercase tracking-wide text-muted">
+                Đăng bài
+              </span>
+              <Field label="Chọn kênh">
+                <select
+                  value={selectedChannel}
+                  onChange={(e) => setSelectedChannel(e.target.value)}
+                  className="w-full rounded-md border border-muted/20 bg-surface px-3 py-2 text-sm"
+                >
+                  <option value="">Chọn kênh đăng bài</option>
+                  {channels.data?.map((ch) => (
+                    <option key={ch.id} value={ch.id}>
+                      {ch.name} ({CHANNEL_TYPE_LABEL[ch.type]})
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Button
+                variant="primary"
+                loading={busy}
+                disabled={!selectedChannel}
+                onClick={() =>
+                  run(
+                    () =>
+                      resources.publications.create({
+                        pieceId: id,
+                        channelId: selectedChannel,
+                      }),
+                    {
+                      success: "Đã tạo yêu cầu đăng bài",
+                      onSuccess: () => {
+                        setSelectedChannel("");
+                        publications.reload();
+                      },
+                    },
+                  )
+                }
               >
-                Dừng theo dõi (job vẫn chạy nền)
-              </button>
-            )}
-            <div aria-live="polite">
-              {gen && (
-                <div className="flex flex-col gap-1 rounded-md border border-muted/15 bg-paper px-3 py-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted">Trạng thái</span>
-                    <JobStatusBadge status={gen.status} />
-                  </div>
-                  {gen.status === "DONE" && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted">Chi phí</span>
-                      <span className="font-mono">${gen.costUsd}</span>
+                Đăng ngay
+              </Button>
+            </Card>
+          )}
+
+          {/* Publications list */}
+          {publications.data && publications.data.length > 0 && (
+            <Card className="flex flex-col gap-3 p-4">
+              <span className="text-[0.72rem] font-medium uppercase tracking-wide text-muted">
+                Lịch sử đăng bài
+              </span>
+              <div className="flex flex-col gap-2">
+                {publications.data.map((pub) => (
+                  <div
+                    key={pub.id}
+                    className="flex items-center justify-between rounded-md border border-muted/15 bg-paper px-3 py-2 text-xs"
+                  >
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-medium">
+                        {pub.channel?.name ?? "Kênh"}
+                      </span>
+                      <span className="text-muted">
+                        {CHANNEL_TYPE_LABEL[pub.channel?.type ?? "WORDPRESS"]}
+                      </span>
                     </div>
-                  )}
-                  {gen.status === "FAILED" && (
-                    <p className="text-[#b3462f]">
-                      {gen.error?.includes("quota")
-                        ? "Tài khoản OpenAI đã hết hạn mức. Liên hệ Admin để nạp thêm credit."
-                        : gen.error?.includes("ngân sách")
-                          ? gen.error
-                          : "AI sinh thất bại. Thử lại sau ít phút."}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          </Card>
+                    <div className="flex flex-col items-end gap-0.5">
+                      <Badge
+                        tone={
+                          pub.status === "LIVE"
+                            ? "accent"
+                            : pub.status === "FAILED"
+                              ? "neutral"
+                              : "amber"
+                        }
+                      >
+                        {PUBLISH_STATUS_LABEL[pub.status]}
+                      </Badge>
+                      {pub.externalUrl && (
+                        <a
+                          href={pub.externalUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-accent hover:underline"
+                        >
+                          Xem bài viết
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
         </div>
       </div>
     </div>

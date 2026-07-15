@@ -2,9 +2,14 @@
 // Mọi nơi hiển thị trạng thái/loại phải lấy nhãn từ đây, không viết chuỗi rời
 // hay để lộ enum thô (DRAFT, IN_REVIEW…).
 import type {
+  AssistantMode,
+  ChannelStatus,
+  ChannelType,
   ContentStatus,
   ContentType,
   JobStatus,
+  MetricSource,
+  PublishStatus,
   VersionSource,
 } from "./types";
 
@@ -36,3 +41,52 @@ export const CONTENT_TYPE_LABEL: Record<ContentType, string> = {
   EMAIL: "Email",
   LANDING: "Landing",
 };
+
+export const ASSISTANT_MODE_LABEL: Record<AssistantMode, string> = {
+  rewrite: "Viết lại",
+  expand: "Mở rộng",
+  summarize: "Tóm tắt",
+  translate: "Dịch",
+  tone: "Đổi giọng",
+};
+
+export const CHANNEL_TYPE_LABEL: Record<ChannelType, string> = {
+  WORDPRESS: "WordPress",
+  GHOST: "Ghost",
+  FACEBOOK: "Facebook",
+  LINKEDIN: "LinkedIn",
+  X: "X (Twitter)",
+};
+
+export const CHANNEL_STATUS_LABEL: Record<ChannelStatus, string> = {
+  ACTIVE: "Đang hoạt động",
+  DISCONNECTED: "Đã ngắt",
+};
+
+export const PUBLISH_STATUS_LABEL: Record<PublishStatus, string> = {
+  PENDING: "Đang chờ",
+  PUBLISHING: "Đang đăng",
+  LIVE: "Đã đăng",
+  FAILED: "Thất bại",
+};
+
+export const METRIC_SOURCE_LABEL: Record<MetricSource, string> = {
+  MANUAL: "Thủ công",
+  API: "API",
+  CSV: "Tệp CSV",
+};
+
+export const ANALYTICS_PERIOD_LABEL: Record<string, string> = {
+  day: "Theo ngày",
+  week: "Theo tuần",
+  month: "Theo tháng",
+};
+
+export const CHART_COLOR_PALETTE = [
+  "#C26B5B",
+  "#3B7DD8",
+  "#4CAF50",
+  "#FF9800",
+  "#9C27B0",
+  "#00BCD4",
+];

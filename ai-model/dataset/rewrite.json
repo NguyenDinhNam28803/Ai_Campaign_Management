@@ -1,0 +1,52 @@
+[
+  {
+    "instruction": "Viết lại đoạn văn sau cho rõ ràng, mạch lạc hơn. Giữ nguyên ý nghĩa.",
+    "input": "Sản phẩm của chúng tôi rất tốt, nhiều khách hàng đã mua và họ đều hài lòng về chất lượng cũng như giá cả hợp lý của nó so với thị trường hiện nay.",
+    "output": "Sản phẩm được khách hàng đánh giá cao về cả chất lượng lẫn mức giá cạnh tranh so với thị trường."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau cho rõ ràng, mạch lạc hơn. Giữ nguyên ý nghĩa.",
+    "input": "Chúng tôi muốn thông báo rằng công ty sẽ tổ chức sự kiện vào ngày 15 tháng 3 năm 2026 tại hội trường lớn của tòa nhà, mọi người vui lòng đến đúng giờ để không bỏ lỡ những thông tin quan trọng.",
+    "output": "Sự kiện công ty diễn ra lúc 15/03/2026 tại hội trường lớn. Vui lòng có mặt đúng giờ để cập nhật các thông tin quan trọng."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau cho rõ ràng, mạch lạc hơn. Giữ nguyên ý nghĩa.",
+    "input": "Vì lý do thời tiết xấu nên chuyến bay bị.delay và hành khách phải đợi ở sân bay rất lâu cho đến khi máy bay có thể cất cánh được.",
+    "output": "Do thời tiết xấu, chuyến bay bị hoãn. Hành khách phải chờ tại sân bay cho đến khi conditions cho phép cất cánh."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau cho rõ ràng, mạch lạc hơn. Giữ nguyên ý nghĩa.",
+    "input": "Đội ngũ nhân viên của công ty chúng tôi ai cũng rất nhiệt tình, họ luôn luôn sẵn sàng hỗ trợ khách hàng bất cứ lúc nào kể cả là ngày nghỉ hay ngày lễ.",
+    "output": "Đội ngũ nhân viên luôn sẵn sàng hỗ trợ khách hàng mọi lúc, kể cả ngày nghỉ và lễ."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau cho rõ ràng, mạch lạc hơn. Giữ nguyên ý nghĩa.",
+    "input": "Nói tóm lại thì cái vấn đề mà chúng ta đang nói đến ở đây chính là việc làm thế nào để có thể nâng cao được chất lượng sản phẩm của mình lên một tầm cao mới so với đối thủ cạnh tranh.",
+    "output": "Tóm lại, vấn đề trọng tâm là nâng cao chất lượng sản phẩm để vượt trội hơn đối thủ."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau cho rõ ràng, mạch lạc hơn. Giữ nguyên ý nghĩa.",
+    "input": "Khi mà khách hàng bước vào cửa hàng thì đội ngũ nhân viên bán hàng sẽ ngay lập tức chào đón và hỏi thăm xem họ cần giúp đỡอะไร không, nếu như khách hàng muốn xem sản phẩm nào thì nhân viên sẽ tận tình giới thiệu cho họ.",
+    "output": "Nhân viên bán hàng chào đón khách ngay khi bước vào cửa hàng, hỏi nhu cầu và giới thiệu sản phẩm theo yêu cầu."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau cho rõ ràng, mạch lạc hơn. Giữ nguyên ý nghĩa.",
+    "input": "Công ty chúng tôi đã đầu tư rất nhiều tiền vào việc nghiên cứu và phát triển sản phẩm mới trong năm nay với hy vọng rằng nó sẽ mang lại doanh thu cao hơn so với năm ngoái.",
+    "output": "Năm nay, công ty đầu tư lớn vào R&D sản phẩm mới kỳ vọng tăng doanh thu so với năm trước."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau cho rõ ràng, mạch lạc hơn. Giữ nguyên ý nghĩa.",
+    "input": "Theo như những gì mà báo cáo tài chính quý trước đã chỉ ra thì tình hình kinh doanh của công ty đang có xu hướng đi lên và dự kiến quý này sẽ còn tốt hơn nữa.",
+    "output": "Báo cáo tài chính quý trước cho thấy doanh nghiệp đang tăng trưởng và dự kiến quý này sẽ khả quan hơn."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau cho rõ ràng, mạch lạc hơn. Giữ nguyên ý nghĩa.",
+    "input": "Mỗi một sản phẩm khi mà được tung ra thị trường thì đều phải trải qua rất nhiều bước kiểm tra chất lượng nghiêm ngặt trước khi đến tay người tiêu dùng.",
+    "output": "Mỗi sản phẩm đều phải qua kiểm tra chất lượng nghiêm ngặt trước khi phân phối đến người tiêu dùng."
+  },
+  {
+    "instruction": "Viết lại đoạn văn sau cho rõ ràng, mạch lạc hơn. Giữ nguyên ý nghĩa.",
+    "input": "Họ quyết định là sẽ hợp tác với nhau trong dự án này bởi vì cả hai bên đều thấy được những lợi ích to lớn mà việc hợp tác này mang lại.",
+    "output": "Hai bên quyết định hợp tác dự án này vì nhận thấy lợi ích lớn từ sự kết hợp."
+  }
+]

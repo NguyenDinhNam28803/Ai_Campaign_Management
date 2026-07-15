@@ -19,7 +19,7 @@ const NAV: {
   { href: "/review", label: "Duyệt", icon: "inbox" },
   { href: "/campaigns", label: "Chiến dịch", icon: "megaphone" },
   { href: "/product-lines", label: "Dòng sản phẩm", icon: "layers" },
-  { href: "/ai-usage", label: "Chi phí AI", icon: "money", roles: ["ADMIN", "MANAGER"] },
+  { href: "/analytics", label: "Phân tích", icon: "gauge", roles: ["ADMIN", "MANAGER"] },
   {
     href: "/settings/organization",
     label: "Cấu hình",
